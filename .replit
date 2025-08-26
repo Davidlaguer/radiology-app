@@ -9,3 +9,7 @@ run = ["sh", "-c", "npm run build && npm run preview"]
 
 [workflows]
 runButton = "Development Server"
+
+[[ports]]
+localPort = 5173
+externalPort = 80
