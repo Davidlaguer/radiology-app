@@ -1,0 +1,319 @@
+[
+  {
+    "zona_anatomica": "Mediastino",
+    "frase_normal": "Estructuras mediastínicas sin alteraciones significativas.",
+    "hallazgos_patologicos": [
+      "Mediastino desplazado hacia",
+      "Infiltración mediastínica por"
+    ],
+    "hallazgos_adicionales": [
+      "Cardiomegalia (no patológica en sí misma)",
+      "Ateromatosis aortocoronaria calcificada (sin deformación estructural del mediastino)",
+      "Patología tiroidea",
+      "Marcapasos",
+      "Dilatación de la aorta torácica ascendente",
+      "Estos hallazgos no deben eliminar la frase normal del mediastino si no se describen desplazamientos, infiltración o masas."
+    ]
+  },
+  {
+    "zona_anatomica": "Arteria pulmonar",
+    "frase_normal": "Arteria pulmonar de calibre normal.",
+    "hallazgos_patologicos": [
+      "Aumento de calibre",
+      "Arteria pulmonar infiltrada",
+      "Hipertensión pulmonar"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Tromboembolismo pulmonar",
+    "frase_normal": "No se observan signos de TEP central.",
+    "hallazgos_patologicos": [
+      "Tromboembolismo pulmonar",
+      "Dudoso defecto de repleción",
+      "Defectos de repleción de contraste ev en relación a TEP central o periférico"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Adenopatías mediastínicas",
+    "frase_normal": "No se observan adenopatías mediastínicas o hiliares aumentadas de tamaño.",
+    "hallazgos_patologicos": [
+      "Adenopatías con necrosis",
+      "Conglomerados",
+      "Adenopatías aumentadas de tamaño",
+      "De aspecto patológico",
+      "De tamaño significativo"
+    ],
+    "hallazgos_adicionales": [
+      "Ganglios pequeños inespecíficos o calcificados o en el límite alto de la normalidad"
+    ]
+  },
+  {
+    "zona_anatomica": "Adenopatías supraclaviculares",
+    "frase_normal": "No se observan adenopatías supraclaviculares o axilares aumentadas de tamaño.",
+    "hallazgos_patologicos": [
+      "Adenopatías con necrosis",
+      "Conglomerados",
+      "Adenopatías aumentadas de tamaño",
+      "De aspecto patológico",
+      "De tamaño significativo"
+    ],
+    "hallazgos_adicionales": [
+      "Ganglios pequeños inespecíficos o calcificados o en el límite alto de la normalidad"
+    ]
+  },
+  {
+    "zona_anatomica": "Parénquima pulmonar",
+    "frase_normal": "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+    "hallazgos_patologicos": [
+      "Enfisema",
+      "Patrón intersticial",
+      "Nódulos",
+      "Masa",
+      "Metástasis",
+      "Condensación de espacio aéreo",
+      "Afectación de espacio aéreo",
+      "Engrosamientos bronquiales",
+      "Signos de broncopatía crónica",
+      "Linfangitis carcinomatosa",
+      "Neumonitis obstructiva",
+      "Vidrio deslustrado",
+      "Atrapamiento aéreo",
+      "Patrón en mosaico",
+      "Opacidades parcheadas",
+      "Hipoventilación",
+      "Engrosamientos septales",
+      "Reticulación subpleural"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Pleura",
+    "frase_normal": "Espacios pleurales libres.",
+    "hallazgos_patologicos": [
+      "Derrame",
+      "Engrosamientos pleurales",
+      "Pleurodesis",
+      "Calcificaciones pleurales",
+      "Placas pleurales calcificadas",
+      "Líquido pleural loculado",
+      "Engrosamiento de hojas pleurales"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Hígado",
+    "frase_normal": "Hígado de tamaño y morfología normal y contornos lisos.",
+    "hallazgos_patologicos": [
+      "Signos de hepatopatía crónica",
+      "Cirrosis",
+      "Parénquima hepático heterogéneo",
+      "Alteración de la morfología hepática",
+      "Redistribución de volumen",
+      "Cambios post-IQ por hepatectomía"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Lesiones focales hepáticas",
+    "frase_normal": "No se observan lesiones focales hepáticas.",
+    "hallazgos_patologicos": [
+      "Hemangiomas",
+      "HCC",
+      "Hepatocarcinoma",
+      "Lesiones hipodensas",
+      "Lesión hepática",
+      "Nódulo o masa hepática",
+      "Imagen nodular o pseudonodular"
+    ],
+    "hallazgos_adicionales": [
+      "Quistes hepáticos",
+      "Granulomas calcificados",
+      "Microquistes hepáticos",
+      "Pequeñas imágenes hipodensas hepáticas inespecíficas",
+      "Lesión o lesiones hipodensas en relación a quistes o microquistes"
+    ]
+  },
+  {
+    "zona_anatomica": "Sistema portal",
+    "frase_normal": "Vena porta y ramas portales intrahepáticas permeables. Venas suprahepáticas y eje esplenoportal permeable.",
+    "hallazgos_patologicos": [
+      "Trombosis",
+      "Defecto de repleción",
+      "Infiltración",
+      "Falta de opacificación"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Vías biliares",
+    "frase_normal": "No se observa dilatación de la vía biliar intra o extrahepática.",
+    "hallazgos_patologicos": [
+      "Leve dilatación de la vía biliar",
+      "Ectasia de colédoco",
+      "Coledocolitiasis que condiciona una dilatación",
+      "Engrosamiento y hipercaptación de la vía biliar"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Vesícula biliar",
+    "frase_normal": "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+    "hallazgos_patologicos": [
+      "Colecistectomía",
+      "Cambios post-IQ por colecistectomía",
+      "Cambios post-quirúrgicos por colecistectomía",
+      "Colelitiasis",
+      "Litiasis biliar",
+      "Barro biliar",
+      "Engrosamiento mural vesicular",
+      "Colecistitis aguda",
+      "Signos de colecistitis aguda o subaguda",
+      "Pared vesicular edematosa o engrosada",
+      "Líquido perivesicular",
+      "Cualquier hallazgo que mencione de forma explícita la vesícula biliar, su contenido, su pared o su morfología con alteraciones sospechosas o inflamatorias será tratado como hallazgo patológico y reemplazará la frase normal correspondiente."
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Bazo",
+    "frase_normal": "Bazo de tamaño y morfología normal. No se observan lesiones focales.",
+    "hallazgos_patologicos": [
+      "Esplenomegalia globulosa",
+      "Captación heterogénea",
+      "Lesión nodular esplénica",
+      "Aumento de tamaño del bazo",
+      "Esplenomegalia",
+      "Cualquier hallazgo que haga referencia al bazo o hallazgo esplénico será tratado como patológico y reemplazará la frase normal correspondiente"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Páncreas",
+    "frase_normal": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "hallazgos_patologicos": [
+      "Atrofia",
+      "Masa / tumoración",
+      "Dilatación o ectasia del conducto de wirsung",
+      "Signos de pancreatitis",
+      "Borramiento glandular",
+      "Cambios post-IQ por DPC",
+      "Calcificaciones puntiformes",
+      "Pequeño quiste",
+      "TPMI"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Suprarrenales",
+    "frase_normal": "Glándulas suprarrenales de tamaño y morfología normales.",
+    "hallazgos_patologicos": [
+      "Nódulo hipodenso en relación a adenoma",
+      "M1 adrenal",
+      "Nódulo inespecífico",
+      "Mielolipoma",
+      "Feocromocitoma",
+      "Hiperplasia adrenal unilateral o bilateral",
+      "Cualquier hallazgo que describa nódulo, crecimiento, alteración morfológica o hiperplasia en una o ambas glándulas suprarrenales debe considerarse patológico y eliminar la frase normal."
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Riñón derecho o izquierdo",
+    "frase_normal": "Riñón derecho / izquierdo de tamaño y morfología normales.",
+    "hallazgos_patologicos": [
+      "Atrofia",
+      "Nefrectomía",
+      "Hipoplasia",
+      "Signos de nefropatía crónica o pielonefritis de repetición",
+      "Tumor renal",
+      "Cambios post-quirúrgicos o post-IQ o postIQ por nefrectomía...",
+      "Riñón aumentado de tamaño",
+      "Riñón con cambios o signos inflamatorios o edematosos"
+    ],
+    "hallazgos_adicionales": [
+      "Litiasis",
+      "Microlitiasis",
+      "Quistes sinusales o corticales",
+      "Cicatrices corticales"
+    ]
+  },
+  {
+    "zona_anatomica": "Vía urinaria derecha o izquierda",
+    "frase_normal": "No se observan lesiones focales ni dilatación de la vía urinaria derecha / izquierda.",
+    "hallazgos_patologicos": [
+      "Ectasia pieloureteral",
+      "Dilatación de pelvis y uréter",
+      "Ureterohidronefrosis",
+      "Pelvis extrarrenal",
+      "Síndrome de la unión",
+      "Engrosamiento urotelial hipercaptante",
+      "Tumor de vías"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Adenopatías abdominales",
+    "frase_normal": "No se observan adenopatías intraabdominales aumentadas de tamaño.",
+    "hallazgos_patologicos": [
+      "Adenopatías con necrosis",
+      "Conglomerados",
+      "Adenopatías aumentadas de tamaño",
+      "De aspecto patológico",
+      "De tamaño significativo"
+    ],
+    "hallazgos_adicionales": [
+      "Ganglios pequeños inespecíficos o calcificados o en el límite alto de la normalidad"
+    ]
+  },
+  {
+    "zona_anatomica": "Adenopatías pélvicas",
+    "frase_normal": "No se observan adenopatías pélvicas o inguinales aumentadas de tamaño.",
+    "hallazgos_patologicos": [
+      "Adenopatías con necrosis",
+      "Conglomerados",
+      "Adenopatías aumentadas de tamaño",
+      "De aspecto patológico",
+      "De tamaño significativo"
+    ],
+    "hallazgos_adicionales": [
+      "Ganglios pequeños inespecíficos o calcificados o en el límite alto de la normalidad"
+    ]
+  },
+  {
+    "zona_anatomica": "Colecciones",
+    "frase_normal": "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal.",
+    "hallazgos_patologicos": [
+      "Ascitis",
+      "Colecciones",
+      "Neumoperitoneo",
+      "Aumento de densidad de la grasa",
+      "Trabeculación de la grasa",
+      "Carcinomatosis peritoneal"
+    ],
+    "hallazgos_adicionales": []
+  },
+  {
+    "zona_anatomica": "Otros o sin clara localización",
+    "frase_normal": "Null.",
+    "hallazgos_patologicos": [
+      "Ateromatosis aortoiliaca calcificada",
+      "Aumento de tamaño de la próstata",
+      "Hernias inguinoescrotales",
+      "Cambios degenerativos esqueléticos",
+      "Cambios post-IQ por prótesis de cadera izquierda",
+      "Cambios post-IQ por hemicolectomía derecha",
+      "Engrosamiento mural circunferencial o segmentario",
+      "Cambios inflamatorios tipo diverticulitis",
+      "Cambios inflamatorios tipo colitis o proctitis",
+      "Trabeculación grasa mesentérica adyacente",
+      "Engrosamiento rectal hipodenso",
+      "Quiste ovárico",
+      "Aumento de la circulación venosa colateral periuterina",
+      "Cambios post-IQ ...",
+      "Patología musculoesquelética"
+    ],
+    "hallazgos_adicionales": []
+  }
+]

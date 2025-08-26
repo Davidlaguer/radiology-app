@@ -1,0 +1,121 @@
+[
+  {
+    "text": "Estructuras mediastínicas sin alteraciones significativas.",
+    "regions": ["TC-TORAX"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "Arteria pulmonar de calibre normal.",
+    "regions": ["TC-TORAX"],
+    "contrast": ["CON CONTRASTE"]
+  },
+  {
+    "text": "No se observan signos de TEP central.",
+    "regions": ["TC-TORAX"],
+    "contrast": ["CON CONTRASTE"]
+  },
+  {
+    "text": "No se observan adenopatías mediastínicas o hiliares aumentadas de tamaño.",
+    "regions": ["TC-TORAX"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "No se observan adenopatías supraclaviculares o axilares aumentadas de tamaño.",
+    "regions": ["TC-TORAX"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+    "regions": ["TC-TORAX"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "Espacios pleurales libres.",
+    "regions": ["TC-TORAX"],
+    "contrast": ["SIEMPRE"]
+  },
+
+  {
+    "text": "Hígado de tamaño y morfología normal y contornos lisos.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "No se observan lesiones focales hepáticas.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "Vena porta y ramas portales intrahepáticas permeables. Venas suprahepáticas y eje esplenoportal permeable.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["CON CONTRASTE"]
+  },
+  {
+    "text": "No se observa dilatación de la vía biliar intra o extrahepática.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "Bazo de tamaño y morfología normal. No se observan lesiones focales.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "Glándulas suprarrenales de tamaño y morfología normales.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+
+  {
+    "text": "Riñón derecho de tamaño y morfología normales.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "No se observan lesiones focales ni dilatación de la vía urinaria derecha.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "Riñón izquierdo de tamaño y morfología normales.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "No se observan lesiones focales ni dilatación de la vía urinaria izquierda.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+
+  {
+    "text": "No se observan adenopatías intraabdominales aumentadas de tamaño.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "No se observan adenopatías pélvicas o inguinales aumentadas de tamaño.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+  {
+    "text": "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal.",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  },
+
+  {
+    "text": "Sin otros hallazgos.",
+    "regions": ["TC-TORAX", "TC-ABDOMEN"],
+    "contrast": ["SIEMPRE"]
+  }
+]

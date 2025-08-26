@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist-electron/
+out/
+.DS_Store
+.vscode/
+.idea/
+*.log
+*.tsbuildinfo
+coverage/
+*.zip
+*.dmg
+*.exe
+*.AppImage
+build/*
+!build/icons/**

@@ -1,0 +1,140 @@
+[
+  {
+    "id": "TC-TORAX-SIN",
+    "label": "TC Tórax sin contraste",
+    "regions": ["TC-TORAX"],
+    "contrast": "SIN_CONTRASTE",
+    "normal_order": [
+      "Estructuras mediastínicas sin alteraciones significativas.",
+      "No se observan adenopatías mediastínicas o hiliares aumentadas de tamaño.",
+      "No se observan adenopatías supraclaviculares o axilares aumentadas de tamaño.",
+      "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+      "Espacios pleurales libres."
+    ],
+    "tecnica": "Se realiza TC de tórax sin contraste ev."
+  },
+  {
+    "id": "TC-TORAX-CON",
+    "label": "TC Tórax con contraste",
+    "regions": ["TC-TORAX"],
+    "contrast": "CONTRASTE",
+    "normal_order": [
+      "Estructuras mediastínicas sin alteraciones significativas.",
+      "Arteria pulmonar de calibre normal.",
+      "No se observan signos de TEP central.",
+      "No se observan adenopatías mediastínicas o hiliares aumentadas de tamaño.",
+      "No se observan adenopatías supraclaviculares o axilares aumentadas de tamaño.",
+      "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+      "Espacios pleurales libres."
+    ],
+    "tecnica": "Se realiza TC de tórax con contraste ev."
+  },
+  {
+    "id": "TC-ABDOMEN-SIN",
+    "label": "TC Abdomen sin contraste",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": "SIN_CONTRASTE",
+    "normal_order": [
+      "Hígado de tamaño y morfología normal y contornos lisos.",
+      "No se observan lesiones focales hepáticas.",
+      "No se observa dilatación de la vía biliar intra o extrahepática.",
+      "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+      "Bazo de tamaño y morfología normal. No se observan lesiones focales.",
+      "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+      "Glándulas suprarrenales de tamaño y morfología normales.",
+      "Riñón derecho de tamaño y morfología normales.",
+      "No se observan lesiones focales ni dilatación de la vía urinaria derecha.",
+      "Riñón izquierdo de tamaño y morfología normales.",
+      "No se observan lesiones focales ni dilatación de la vía urinaria izquierda.",
+      "No se observan adenopatías intraabdominales aumentadas de tamaño.",
+      "No se observan adenopatías pélvicas o inguinales aumentadas de tamaño.",
+      "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal."
+    ],
+    "tecnica": "Se realiza TC de abdomen sin contraste ev."
+  },
+  {
+    "id": "TC-ABDOMEN-CON",
+    "label": "TC Abdomen con contraste",
+    "regions": ["TC-ABDOMEN"],
+    "contrast": "CONTRASTE",
+    "normal_order": [
+      "Hígado de tamaño y morfología normal y contornos lisos.",
+      "No se observan lesiones focales hepáticas.",
+      "Vena porta y ramas portales intrahepáticas permeables. Venas suprahepáticas y eje esplenoportal permeable.",
+      "No se observa dilatación de la vía biliar intra o extrahepática.",
+      "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+      "Bazo de tamaño y morfología normal. No se observan lesiones focales.",
+      "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+      "Glándulas suprarrenales de tamaño y morfología normales.",
+      "Riñón derecho de tamaño y morfología normales.",
+      "No se observan lesiones focales ni dilatación de la vía urinaria derecha.",
+      "Riñón izquierdo de tamaño y morfología normales.",
+      "No se observan lesiones focales ni dilatación de la vía urinaria izquierda.",
+      "No se observan adenopatías intraabdominales aumentadas de tamaño.",
+      "No se observan adenopatías pélvicas o inguinales aumentadas de tamaño.",
+      "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal."
+    ],
+    "tecnica": "Se realiza TC de abdomen con contraste ev."
+  },
+  {
+    "id": "TC-TORAX-ABDOMEN-SIN",
+    "label": "TC Tórax y Abdomen sin contraste",
+    "regions": ["TC-TORAX", "TC-ABDOMEN"],
+    "contrast": "SIN_CONTRASTE",
+    "normal_order": [
+      "Estructuras mediastínicas sin alteraciones significativas.",
+      "No se observan adenopatías mediastínicas o hiliares aumentadas de tamaño.",
+      "No se observan adenopatías supraclaviculares o axilares aumentadas de tamaño.",
+      "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+      "Espacios pleurales libres.",
+
+      "Hígado de tamaño y morfología normal y contornos lisos.",
+      "No se observan lesiones focales hepáticas.",
+      "No se observa dilatación de la vía biliar intra o extrahepática.",
+      "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+      "Bazo de tamaño y morfología normal. No se observan lesiones focales.",
+      "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+      "Glándulas suprarrenales de tamaño y morfología normales.",
+      "Riñón derecho de tamaño y morfología normales.",
+      "No se observan lesiones focales ni dilatación de la vía urinaria derecha.",
+      "Riñón izquierdo de tamaño y morfología normales.",
+      "No se observan lesiones focales ni dilatación de la vía urinaria izquierda.",
+      "No se observan adenopatías intraabdominales aumentadas de tamaño.",
+      "No se observan adenopatías pélvicas o inguinales aumentadas de tamaño.",
+      "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal."
+    ],
+    "tecnica": "Se realiza TC de tórax y abdomen sin contraste ev."
+  },
+  {
+    "id": "TC-TORAX-ABDOMEN-CON",
+    "label": "TC Tórax y Abdomen con contraste",
+    "regions": ["TC-TORAX", "TC-ABDOMEN"],
+    "contrast": "CONTRASTE",
+    "normal_order": [
+      "Estructuras mediastínicas sin alteraciones significativas.",
+      "Arteria pulmonar de calibre normal.",
+      "No se observan signos de TEP central.",
+      "No se observan adenopatías mediastínicas o hiliares aumentadas de tamaño.",
+      "No se observan adenopatías supraclaviculares o axilares aumentadas de tamaño.",
+      "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+      "Espacios pleurales libres.",
+
+      "Hígado de tamaño y morfología normal y contornos lisos.",
+      "No se observan lesiones focales hepáticas.",
+      "Vena porta y ramas portales intrahepáticas permeables. Venas suprahepáticas y eje esplenoportal permeable.",
+      "No se observa dilatación de la vía biliar intra o extrahepática.",
+      "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+      "Bazo de tamaño y morfología normal. No se observan lesiones focales.",
+      "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+      "Glándulas suprarrenales de tamaño y morfología normales.",
+      "Riñón derecho de tamaño y morfología normales.",
+      "No se observan lesiones focales ni dilatación de la vía urinaria derecha.",
+      "Riñón izquierdo de tamaño y morfología normales.",
+      "No se observan lesiones focales ni dilatación de la vía urinaria izquierda.",
+      "No se observan adenopatías intraabdominales aumentadas de tamaño.",
+      "No se observan adenopatías pélvicas o inguinales aumentadas de tamaño.",
+      "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal."
+    ],
+    "tecnica": "Se realiza TC de tórax y abdomen con contraste ev."
+  }
+]

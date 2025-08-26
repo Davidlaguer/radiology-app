@@ -1,0 +1,1743 @@
+[
+  {
+    "frase_normal": "No hay ninguna frase normal.",
+    "hallazgo_oficial": "Afectación de espacio aéreo",
+    "sinonimos": [
+      "Patrón de espacio aéreo",
+      "Ocupación alveolar",
+      "Relleno alveolar"
+    ],
+    "errores_comunes": [
+      "Afectacion espacio aereo",
+      "Espacio aereo",
+      "Afectacion pulmonar"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal.",
+    "hallazgo_oficial": "Engrosamientos bronquiales",
+    "sinonimos": [
+      "Bronquiectasias",
+      "Engrosamiento de paredes bronquiales",
+      "Signos de bronquitis crónica"
+    ],
+    "errores_comunes": [
+      "Engrosamientos bronquiales",
+      "Bronquiectasias",
+      "Engrosamiento bronquial"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal.",
+    "hallazgo_oficial": "Signos de broncopatía crónica",
+    "sinonimos": [
+      "Enfermedad pulmonar obstructiva crónica (EPOC)",
+      "Bronquitis crónica",
+      "Cambios por broncopatía"
+    ],
+    "errores_comunes": [
+      "Broncopatia cronica",
+      "EPOC",
+      "Bronquitis"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal.",
+    "hallazgo_oficial": "Linfangitis carcinomatosa",
+    "sinonimos": [
+      "Infiltración linfangítica",
+      "Diseminación linfangítica",
+      "Patrón linfangítico"
+    ],
+    "errores_comunes": [
+      "Linfangitis",
+      "Linfangitis carcinomatosa",
+      "Linfangitis"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal.",
+    "hallazgo_oficial": "Neumonitis obstructiva",
+    "sinonimos": [
+      "Neumonía obstructiva",
+      "Inflamación pulmonar obstructiva",
+      "Obstrucción bronquial con neumonitis"
+    ],
+    "errores_comunes": [
+      "Neumonitis obstructiva",
+      "Neumonitis",
+      "Obstructiva"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal.",
+    "hallazgo_oficial": "Vidrio deslustrado",
+    "sinonimos": [
+      "Opacidad en vidrio deslustrado",
+      "Atenuación en vidrio esmerilado",
+      "Patrón en vidrio despulido"
+    ],
+    "errores_comunes": [
+      "Vidrio deslustrado",
+      "Vidrio despulido",
+      "Vidrio"
+    ]
+  },
+  {
+    "frase_normal": "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+    "hallazgo_oficial": "Atrapamiento aéreo",
+    "sinonimos": [
+      "Atrapamiento de aire",
+      "Air trapping",
+      "Hiperinsuflación localizada"
+    ],
+    "errores_comunes": [
+      "Atrapamiento aereo",
+      "Atrapamiento de aire",
+      "Air trapping"
+    ]
+  },
+  {
+    "frase_normal": "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+    "hallazgo_oficial": "Patrón en mosaico",
+    "sinonimos": [
+      "Atenuación en mosaico",
+      "Patrón de atenuación en mosaico",
+      "Perfusión en mosaico"
+    ],
+    "errores_comunes": [
+      "Patron mosaico",
+      "Mosaico",
+      "Atenuacion mosaico"
+    ]
+  },
+  {
+    "frase_normal": "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+    "hallazgo_oficial": "Opacidades parcheadas",
+    "sinonimos": [
+      "Opacidades en parches",
+      "Infiltrados parcheados",
+      "Consolidaciones parcheadas"
+    ],
+    "errores_comunes": [
+      "Opacidades parcheadas",
+      "Opacidades en parches",
+      "Parcheadas"
+    ]
+  },
+  {
+    "frase_normal": "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+    "hallazgo_oficial": "Hipoventilación",
+    "sinonimos": [
+      "Atelectasia",
+      "Colapso pulmonar",
+      "Volumen pulmonar reducido"
+    ],
+    "errores_comunes": [
+      "Hipoventilacion",
+      "Atelectasia",
+      "Colapso"
+    ]
+  },
+  {
+    "frase_normal": "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+    "hallazgo_oficial": "Engrosamientos septales",
+    "sinonimos": [
+      "Engrosamiento de septos interlobulillares",
+      "Líneas septales",
+      "Patrón septal"
+    ],
+    "errores_comunes": [
+      "Engrosamientos septales",
+      "Septos engrosados",
+      "Engrosamiento septal"
+    ]
+  },
+  {
+    "frase_normal": "Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.",
+    "hallazgo_oficial": "Reticulación subpleural",
+    "sinonimos": [
+      "Patrón reticular subpleural",
+      "Fibrosis subpleural",
+      "Reticulación periférica"
+    ],
+    "errores_comunes": [
+      "Reticulacion subpleural",
+      "Reticulacion",
+      "Fibrosis subpleural"
+    ]
+  },
+  {
+    "frase_normal": "Espacios pleurales libres.",
+    "hallazgo_oficial": "Derrame",
+    "sinonimos": [
+      "Líquido pleural",
+      "Presencia de derrame",
+      "Signos de derrame",
+      "Derrame pleural"
+    ],
+    "errores_comunes": [
+      "De rame pleural",
+      "Derrame plural",
+      "Derame",
+      "Liquido pleural"
+    ],
+    "excluir": [
+      "Engrosamiento pleural",
+      "Pleurodesis"
+    ]
+  },
+  {
+    "frase_normal": "Espacios pleurales libres.",
+    "hallazgo_oficial": "Engrosamientos pleurales",
+    "sinonimos": [
+      "Pleura engrosada",
+      "Fibrosis pleural",
+      "Placas pleurales"
+    ],
+    "errores_comunes": [
+      "Engrosamientos pleurales",
+      "Pleura engrosada",
+      "Engrosamiento"
+    ]
+  },
+  {
+    "frase_normal": "Espacios pleurales libres.",
+    "hallazgo_oficial": "Pleurodesis",
+    "sinonimos": [
+      "Adherencias pleurales",
+      "Fusión pleural",
+      "Pleurodesis quirúrgica"
+    ],
+    "errores_comunes": [
+      "Pleurodesis"
+    ]
+  },
+  {
+    "frase_normal": "Hígado de tamaño y morfología normal y contornos lisos.",
+    "hallazgo_oficial": "Signos de hepatopatía crónica",
+    "sinonimos": [
+      "Hepatopatía crónica",
+      "Hígado con cambios crónicos",
+      "Fibrosis hepática",
+      "Cirrosis"
+    ],
+    "errores_comunes": [
+      "Hepatopatia cronica",
+      "Hepatopatia",
+      "Higado cronico",
+      "Cirrosis"
+    ]
+  },
+  {
+    "frase_normal": "Hígado de tamaño y morfología normal y contornos lisos.",
+    "hallazgo_oficial": "Cambios post-IQ por hepatectomía",
+    "sinonimos": [
+      "Estado post-hepatectomía",
+      "Resección hepática previa",
+      "Cambios postquirúrgicos hepáticos"
+    ],
+    "errores_comunes": [
+      "Cambios post IQ",
+      "Hepatectomia",
+      "Post IQ higado"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales hepáticas.",
+    "hallazgo_oficial": "Hemangiomas",
+    "sinonimos": [
+      "Hemangioma hepático",
+      "Lesión vascular hepática",
+      "Nódulo hemangiomatoso"
+    ],
+    "errores_comunes": [
+      "Hemangioma",
+      "Hemangiomas",
+      "Hemangioma higado"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales hepáticas.",
+    "hallazgo_oficial": "HCC (hepatocarcinoma)",
+    "sinonimos": [
+      "Tumor hepático",
+      "Carcinoma hepatocelular",
+      "Masa hepática sospechosa",
+      "Hepatocarcinoma"
+    ],
+    "errores_comunes": [
+      "H C C",
+      "hache ce ce",
+      "hcc",
+      "hepatocelular",
+      "Tumor higado"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales hepáticas.",
+    "hallazgo_oficial": "Lesiones hipodensas",
+    "sinonimos": [
+      "Imágenes hipodensas",
+      "Áreas hipodensas",
+      "Lesiones de baja atenuación"
+    ],
+    "errores_comunes": [
+      "Lesiones hipodensas",
+      "Hipodensas",
+      "Lesion hipodensa"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales hepáticas.",
+    "hallazgo_oficial": "Lesión hepática",
+    "sinonimos": [
+      "Nódulo hepático",
+      "Masa hepática",
+      "Imagen focal hepática",
+      "Lesión focal en hígado"
+    ],
+    "errores_comunes": [
+      "Lesion hepatica",
+      "Lesion en higado",
+      "Nódulo en higado"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales hepáticas.",
+    "hallazgo_oficial": "Quistes hepáticos",
+    "sinonimos": [
+      "Lesión quística hepática",
+      "Quistes simples hepáticos",
+      "Microquistes hepáticos",
+      "Lesión hipodensa (si es quística)"
+    ],
+    "errores_comunes": [
+      "Quistes hepaticos",
+      "Quiste higado",
+      "Quistes"
+    ],
+    "excluir": [
+      "Nódulo hepático",
+      "Masa hepática"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales hepáticas.",
+    "hallazgo_oficial": "Granulomas calcificados",
+    "sinonimos": [
+      "Calcificaciones hepáticas",
+      "Granulomas calcificados en hígado",
+      "Lesiones calcificadas"
+    ],
+    "errores_comunes": [
+      "Granulomas calcificados",
+      "Calcificaciones higado",
+      "Granulomas"
+    ]
+  },
+  {
+    "frase_normal": "Vena porta y ramas portales intrahepáticas permeables. Venas suprahepáticas y eje esplenoportal permeable.",
+    "hallazgo_oficial": "Trombosis",
+    "sinonimos": [
+      "Trombo",
+      "Oclusión vascular",
+      "Trombosis portal/esplénica"
+    ],
+    "errores_comunes": [
+      "Trombosis",
+      "Trombo",
+      "Trombosis portal"
+    ]
+  },
+  {
+    "frase_normal": "Vena porta y ramas portales intrahepáticas permeables. Venas suprahepáticas y eje esplenoportal permeable.",
+    "hallazgo_oficial": "Defecto de repleción",
+    "sinonimos": [
+      "Defecto de llenado",
+      "No opacificación",
+      "Área no realzada"
+    ],
+    "errores_comunes": [
+      "Defecto de replecion",
+      "Defecto de repecion",
+      "Defecto de llenado"
+    ]
+  },
+  {
+    "frase_normal": "Vena porta y ramas portales intrahepáticas permeables. Venas suprahepáticas y eje esplenoportal permeable.",
+    "hallazgo_oficial": "Infiltración",
+    "sinonimos": [
+      "Infiltrado",
+      "Invasión",
+      "Extensión tumoral"
+    ],
+    "errores_comunes": [
+      "Infiltracion",
+      "Infiltrado",
+      "Infiltracion portal"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Derrame pleural",
+    "sinonimos": [
+      "Líquido pleural",
+      "Presencia de derrame",
+      "Signos de derrame"
+    ],
+    "errores_comunes": [
+      "De rame pleural",
+      "Derrame plural",
+      "Derame"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Nódulo pulmonar",
+    "sinonimos": [
+      "Nodulillo",
+      "Lesión nodular",
+      "Imagen nodular",
+      "Lesión sólida pulmonar"
+    ],
+    "errores_comunes": [
+      "Nódulo plumonar",
+      "Nodulo",
+      "Nódulo pulmoral"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Colelitiasis",
+    "sinonimos": [
+      "Litiasis biliar",
+      "Cálculos biliares",
+      "Piedras en la vesícula"
+    ],
+    "errores_comunes": [
+      "Coletiasis",
+      "Colelitias",
+      "Colitiasis"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "HCC (hepatocarcinoma)",
+    "sinonimos": [
+      "Tumor hepático",
+      "Carcinoma hepatocelular",
+      "Masa hepática sospechosa"
+    ],
+    "errores_comunes": [
+      "H C C",
+      "hache ce ce",
+      "hcc hepatocelular"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Quistes hepáticos",
+    "sinonimos": [
+      "Lesión hipodensa",
+      "Imágenes nodulares hipodensas",
+      "Quistes subcapsulares",
+      "Pequeños quistes hepáticos"
+    ],
+    "errores_comunes": []
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Nódulo adrenal",
+    "sinonimos": [
+      "Nódulo hipodenso",
+      "Imagen nodular en suprarrenal",
+      "Masa suprarrenal",
+      "Adenoma suprarrenal"
+    ],
+    "errores_comunes": []
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Adenopatías aumentadas de tamaño",
+    "sinonimos": [
+      "Ganglios aumentados",
+      "Ganglios patológicos",
+      "Linfadenopatías"
+    ],
+    "errores_comunes": [
+      "Adenopatias grandes",
+      "Adenopatias mediastino",
+      "Ganlios aumentados"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Tromboembolismo pulmonar",
+    "sinonimos": [
+      "TEP agudo",
+      "TEP central",
+      "Defecto de repleción arterial"
+    ],
+    "errores_comunes": [
+      "Tepe",
+      "trombo en la pulmonar",
+      "tromboembolia"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Ascitis",
+    "sinonimos": [
+      "Líquido libre abdominal",
+      "Acumulación de líquido",
+      "Derrame peritoneal"
+    ],
+    "errores_comunes": [
+      "Asitis",
+      "Hascitis",
+      "Liquido intraabdominal"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Coledocolitiasis",
+    "sinonimos": [
+      "Litiasis en colédoco",
+      "Cálculos en vía biliar",
+      "Obstrucción biliar por cálculo"
+    ],
+    "errores_comunes": [
+      "Coledoco litiasis",
+      "Cole do colitiasis",
+      "Colesistolitiasis"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Mediastino desplazado hacia",
+    "sinonimos": [
+      "Desplazamiento mediastínico",
+      "Mediastino desviado",
+      "Desviación del mediastino"
+    ],
+    "errores_comunes": [
+      "Mediastino despalzado",
+      "Desplazamiento mediastinico",
+      "Mediastino movido"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Infiltración mediastínica por",
+    "sinonimos": [
+      "Infiltrado mediastínico",
+      "Proceso infiltrativo en mediastino",
+      "Ocupación mediastínica"
+    ],
+    "errores_comunes": [
+      "Infiltracion mediastinica",
+      "Infiltrado mediastino",
+      "Infiltracion"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Cardiomegalia (no patológica en sí misma)",
+    "sinonimos": [
+      "Corazón aumentado de tamaño",
+      "Aumento del tamaño cardíaco",
+      "Corazón grande"
+    ],
+    "errores_comunes": [
+      "Cardiomegalia",
+      "Cardiomegali",
+      "Corazon grande"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Ateromatosis aortocoronaria calcificada (sin deformación estructural del mediastino)",
+    "sinonimos": [
+      "Calcificaciones aortocoronarias",
+      "Aterosclerosis coronaria calcificada",
+      "Calcificación de la aorta"
+    ],
+    "errores_comunes": [
+      "Ateromatosis aortocoronaria",
+      "Ateromatosis calcificada",
+      "Ateromatosis"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Patología tiroidea",
+    "sinonimos": [
+      "Bocio tiroideo",
+      "Nódulo tiroideo",
+      "Aumento de tiroides"
+    ],
+    "errores_comunes": [
+      "Patologia tiroidea",
+      "Tiroides",
+      "Bocio"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Marcapasos",
+    "sinonimos": [
+      "Dispositivo marcapasos",
+      "Electrodo de marcapasos",
+      "Marcapaso"
+    ],
+    "errores_comunes": [
+      "Marcapasos",
+      "Marcapaso",
+      "Marcapaz"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Dilatación de la aorta torácica ascendente",
+    "sinonimos": [
+      "Aorta ascendente dilatada",
+      "Ectasia de aorta ascendente",
+      "Aneurisma de aorta ascendente (si es leve)"
+    ],
+    "errores_comunes": [
+      "Dilatacion aorta toracica",
+      "Aorta dilatada",
+      "Dilatacion de la aorta"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Aumento de calibre",
+    "sinonimos": [
+      "Dilatación de la arteria pulmonar",
+      "Arteria pulmonar dilatada",
+      "Arteria pulmonar ensanchada"
+    ],
+    "errores_comunes": [
+      "Aumento de calibre",
+      "Calibre aumentado",
+      "Arteria pulmonar aumentada"
+    ]
+  },
+  {
+    "frase_normal": "",
+    "hallazgo_oficial": "Hipertensión pulmonar",
+    "sinonimos": [
+      "Signos de hipertensión pulmonar",
+      "Hipertensión arterial pulmonar",
+      "HAP"
+    ],
+    "errores_comunes": [
+      "Hipertension pulmonar",
+      "Hipertension",
+      "HAP"
+    ]
+  },
+  {
+    "frase_normal": "Vena porta y ramas portales intrahepáticas permeables. Venas suprahepáticas y eje esplenoportal permeable.",
+    "hallazgo_oficial": "Falta de opacificación",
+    "sinonimos": [
+      "No realce",
+      "Hiporrealce",
+      "Ausencia de contraste"
+    ],
+    "errores_comunes": [
+      "Falta de opacificacion",
+      "No opacifica",
+      "Opacificacion ausente"
+    ]
+  },
+  {
+    "frase_normal": "No se observa dilatación de la vía biliar intra o extrahepática.",
+    "hallazgo_oficial": "Leve dilatación de la vía biliar",
+    "sinonimos": [
+      "Ectasia biliar",
+      "Vía biliar ligeramente dilatada",
+      "Dilatación mínima de la vía biliar"
+    ],
+    "errores_comunes": [
+      "Leve dilatacion via biliar",
+      "Dilatacion biliar",
+      "Ectasia biliar"
+    ]
+  },
+  {
+    "frase_normal": "No se observa dilatación de la vía biliar intra o extrahepática.",
+    "hallazgo_oficial": "Ectasia de colédoco",
+    "sinonimos": [
+      "Colédoco dilatado",
+      "Dilatación del conducto biliar común",
+      "Colédoco ensanchado"
+    ],
+    "errores_comunes": [
+      "Ectasia coledoco",
+      "Coledoco dilatado",
+      "Ectasia"
+    ]
+  },
+  {
+    "frase_normal": "No se observa dilatación de la vía biliar intra o extrahepática.",
+    "hallazgo_oficial": "Coledocolitiasis que condiciona una dilatación",
+    "sinonimos": [
+      "Litiasis en colédoco con dilatación",
+      "Cálculo biliar con dilatación de vía biliar",
+      "Obstrucción biliar por cálculo"
+    ],
+    "errores_comunes": [
+      "Coledocolitiasis",
+      "Coledoco litiasis",
+      "Calculo en coledoco"
+    ]
+  },
+  {
+    "frase_normal": "No se observa dilatación de la vía biliar intra o extrahepática.",
+    "hallazgo_oficial": "Engrosamiento y hipercaptación de la vía biliar",
+    "sinonimos": [
+      "Inflamación de la vía biliar",
+      "Colangitis",
+      "Engrosamiento mural biliar con realce"
+    ],
+    "errores_comunes": [
+      "Engrosamiento via biliar",
+      "Hipercaptacion biliar",
+      "Colangitis"
+    ]
+  },
+  {
+    "frase_normal": "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+    "hallazgo_oficial": "Colecistectomía",
+    "sinonimos": [
+      "Vesícula biliar extirpada",
+      "Ausencia de vesícula biliar",
+      "Estado post-colecistectomía"
+    ],
+    "errores_comunes": [
+      "Colecistectomia",
+      "Vesicula extirpada",
+      "Post colecistectomia"
+    ]
+  },
+  {
+    "frase_normal": "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+    "hallazgo_oficial": "Colelitiasis",
+    "sinonimos": [
+      "Litiasis biliar",
+      "Cálculos biliares",
+      "Piedras en la vesícula",
+      "Litiasis vesicular"
+    ],
+    "errores_comunes": [
+      "Coletiasis",
+      "Colelitias",
+      "Colitiasis",
+      "Litiasis biliar"
+    ]
+  },
+  {
+    "frase_normal": "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+    "hallazgo_oficial": "Barro biliar",
+    "sinonimos": [
+      "Sludge biliar",
+      "Sedimento biliar",
+      "Microcálculos biliares"
+    ],
+    "errores_comunes": [
+      "Barro biliar",
+      "Sludge",
+      "Barro"
+    ]
+  },
+  {
+    "frase_normal": "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+    "hallazgo_oficial": "Engrosamiento mural vesicular",
+    "sinonimos": [
+      "Pared vesicular engrosada",
+      "Engrosamiento de la pared de la vesícula",
+      "Colecistitis crónica (si hay otros signos)"
+    ],
+    "errores_comunes": [
+      "Engrosamiento vesicular",
+      "Pared vesicular engrosada",
+      "Engrosamiento mural"
+    ]
+  },
+  {
+    "frase_normal": "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+    "hallazgo_oficial": "Colecistitis aguda",
+    "sinonimos": [
+      "Inflamación aguda de la vesícula biliar",
+      "Signos de colecistitis",
+      "Vesícula biliar inflamada"
+    ],
+    "errores_comunes": [
+      "Colecistitis",
+      "Colecistitis aguda",
+      "Colecistitis"
+    ]
+  },
+  {
+    "frase_normal": "Vesícula biliar sin evidencia de litiasis en su interior, engrosamientos murales o signos inflamatorios agudos.",
+    "hallazgo_oficial": "Líquido perivesicular",
+    "sinonimos": [
+      "Líquido alrededor de la vesícula",
+      "Colección perivesicular",
+      "Derrame perivesicular"
+    ],
+    "errores_comunes": [
+      "Liquido perivesicular",
+      "Liquido alrededor vesicula",
+      "Perivesicular"
+    ]
+  },
+  {
+    "frase_normal": "Bazo de tamaño y morfología normal. No se observan lesiones focales.",
+    "hallazgo_oficial": "Esplenomegalia globulosa",
+    "sinonimos": [
+      "Bazo aumentado de tamaño",
+      "Esplenomegalia",
+      "Bazo grande"
+    ],
+    "errores_comunes": [
+      "Esplenomegalia",
+      "Esplenomegalia globulosa",
+      "Bazo grande"
+    ]
+  },
+  {
+    "frase_normal": "Bazo de tamaño y morfología normal. No se observan lesiones focales.",
+    "hallazgo_oficial": "Captación heterogénea",
+    "sinonimos": [
+      "Realce heterogéneo",
+      "Patrón de realce heterogéneo",
+      "Captación irregular"
+    ],
+    "errores_comunes": [
+      "Captacion heterogenea",
+      "Realce heterogeneo",
+      "Heterogenea"
+    ]
+  },
+  {
+    "frase_normal": "Bazo de tamaño y morfología normal. No se observan lesiones focales.",
+    "hallazgo_oficial": "Lesión nodular esplénica",
+    "sinonimos": [
+      "Nódulo esplénico",
+      "Masa esplénica",
+      "Lesión focal en bazo"
+    ],
+    "errores_comunes": [
+      "Lesion nodular esplenica",
+      "Nodulo esplenico",
+      "Lesion en bazo"
+    ]
+  },
+  {
+    "frase_normal": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "hallazgo_oficial": "Atrofia",
+    "sinonimos": [
+      "Páncreas atrófico",
+      "Atrofia pancreática",
+      "Disminución de tamaño del páncreas"
+    ],
+    "errores_comunes": [
+      "Atrofia",
+      "Atrofia pancreas",
+      "Pancreas atrofico"
+    ]
+  },
+  {
+    "frase_normal": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "hallazgo_oficial": "Masa / tumoración",
+    "sinonimos": [
+      "Nódulo pancreático",
+      "Tumor pancreático",
+      "Lesión ocupante de espacio en páncreas"
+    ],
+    "errores_comunes": [
+      "Masa pancreas",
+      "Tumoracion pancreas",
+      "Tumor"
+    ]
+  },
+  {
+    "frase_normal": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "hallazgo_oficial": "Dilatación o ectasia del conducto de wirsung",
+    "sinonimos": [
+      "Conducto de Wirsung dilatado",
+      "Ectasia del conducto pancreático",
+      "Dilatación del conducto principal"
+    ],
+    "errores_comunes": [
+      "Dilatacion wirsung",
+      "Ectasia wirsung",
+      "Wirsung dilatado"
+    ]
+  },
+  {
+    "frase_normal": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "hallazgo_oficial": "Signos de pancreatitis",
+    "sinonimos": [
+      "Inflamación pancreática",
+      "Pancreatitis aguda",
+      "Pancreatitis crónica"
+    ],
+    "errores_comunes": [
+      "Pancreatitis",
+      "Pancreatitis aguda",
+      "Pancreatitis cronica"
+    ]
+  },
+  {
+    "frase_normal": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "hallazgo_oficial": "Borramiento glandular",
+    "sinonimos": [
+      "Pérdida de la definición glandular",
+      "Páncreas mal definido",
+      "Edema pancreático"
+    ],
+    "errores_comunes": [
+      "Borramiento glandular",
+      "Borramiento pancreas",
+      "Glandular borrado"
+    ]
+  },
+  {
+    "frase_normal": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "hallazgo_oficial": "Cambios post-IQ por DPC",
+    "sinonimos": [
+      "Estado post-duodenopancreatectomía cefálica",
+      "Cirugía de Whipple",
+      "Cambios postquirúrgicos pancreáticos"
+    ],
+    "errores_comunes": [
+      "Cambios post IQ",
+      "DPC",
+      "Post IQ pancreas"
+    ]
+  },
+  {
+    "frase_normal": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "hallazgo_oficial": "Calcificaciones puntiformes",
+    "sinonimos": [
+      "Calcificaciones pancreáticas",
+      "Puntos calcificados",
+      "Microcalcificaciones"
+    ],
+    "errores_comunes": [
+      "Calcificaciones puntiformes",
+      "Calcificaciones pancreas",
+      "Puntos calcificados"
+    ]
+  },
+  {
+    "frase_normal": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "hallazgo_oficial": "Pequeño quiste",
+    "sinonimos": [
+      "Quiste pancreático",
+      "Lesión quística pequeña",
+      "Quiste simple"
+    ],
+    "errores_comunes": [
+      "Pequeño quiste",
+      "Quiste pancreas",
+      "Quiste"
+    ]
+  },
+  {
+    "frase_normal": "Páncreas de tamaño y morfología normales. No se observa dilatación del conducto de Wirsung.",
+    "hallazgo_oficial": "TPMI",
+    "sinonimos": [
+      "Tumor papilar mucinoso intraductal",
+      "IPMN",
+      "Neoplasia mucinosa papilar intraductal"
+    ],
+    "errores_comunes": [
+      "TPMI",
+      "IPMN",
+      "Tumor intraductal"
+    ]
+  },
+  {
+    "frase_normal": "Glándulas suprarrenales de tamaño y morfología normales.",
+    "hallazgo_oficial": "Nódulo hipodenso en relación a adenoma",
+    "sinonimos": [
+      "Adenoma suprarrenal",
+      "Nódulo suprarrenal benigno",
+      "Nódulo adrenal hipodenso"
+    ],
+    "errores_comunes": [
+      "Nodulo hipodenso",
+      "Adenoma suprarrenal",
+      "Nodulo adrenal"
+    ]
+  },
+  {
+    "frase_normal": "Glándulas suprarrenales de tamaño y morfología normales.",
+    "hallazgo_oficial": "M1 adrenal",
+    "sinonimos": [
+      "Metástasis suprarrenal",
+      "Lesión metastásica adrenal",
+      "Siembra adrenal"
+    ],
+    "errores_comunes": [
+      "M1 adrenal",
+      "Metastasis adrenal",
+      "M1"
+    ]
+  },
+  {
+    "frase_normal": "Glándulas suprarrenales de tamaño y morfología normales.",
+    "hallazgo_oficial": "Nódulo inespecífico",
+    "sinonimos": [
+      "Nódulo suprarrenal indeterminado",
+      "Lesión suprarrenal inespecífica",
+      "Nódulo adrenal sin caracterización"
+    ],
+    "errores_comunes": [
+      "Nodulo inespecifico",
+      "Inespecifico adrenal",
+      "Nodulo suprarrenal"
+    ]
+  },
+  {
+    "frase_normal": "Glándulas suprarrenales de tamaño y morfología normales.",
+    "hallazgo_oficial": "Mielolipoma",
+    "sinonimos": [
+      "Tumor suprarrenal benigno (mielolipoma)",
+      "Lesión suprarrenal grasa",
+      "Mielolipoma adrenal"
+    ],
+    "errores_comunes": [
+      "Mielolipoma",
+      "Mielolipoma adrenal",
+      "Lipoma suprarrenal"
+    ]
+  },
+  {
+    "frase_normal": "Glándulas suprarrenales de tamaño y morfología normales.",
+    "hallazgo_oficial": "Feocromocitoma",
+    "sinonimos": [
+      "Tumor de la médula suprarrenal",
+      "Feocromocitoma adrenal",
+      "Masa suprarrenal hipervascular"
+    ],
+    "errores_comunes": [
+      "Feocromocitoma",
+      "Feocromo"
+    ]
+  },
+  {
+    "frase_normal": "Glándulas suprarrenales de tamaño y morfología normales.",
+    "hallazgo_oficial": "Hiperplasia adrenal unilateral o bilateral",
+    "sinonimos": [
+      "Hiperplasia suprarrenal",
+      "Aumento de tamaño de la glándula suprarrenal",
+      "Suprarrenales hiperplásicas"
+    ],
+    "errores_comunes": [
+      "Hiperplasia adrenal",
+      "Hiperplasia suprarrenal",
+      "Hiperplasia"
+    ]
+  },
+  {
+    "frase_normal": "Glándulas suprarrenales de tamaño y morfología normales.",
+    "hallazgo_oficial": "No se visualiza claramente la glándula suprarrenal derecha (a valorar antecedentes quirúrgicos)",
+    "sinonimos": [
+      "Suprarrenal derecha no visible",
+      "Ausencia de visualización de suprarrenal derecha",
+      "Suprarrenal derecha no valorable"
+    ],
+    "errores_comunes": [
+      "No se visualiza suprarrenal derecha",
+      "Suprarrenal derecha no se ve",
+      "No se ve suprarrenal"
+    ]
+  },
+  {
+    "frase_normal": "Riñón derecho / izquierdo de tamaño y morfología normales.",
+    "hallazgo_oficial": "Atrofia",
+    "sinonimos": [
+      "Riñón atrófico",
+      "Disminución de tamaño renal",
+      "Riñón pequeño"
+    ],
+    "errores_comunes": [
+      "Atrofia renal",
+      "Rinon atrofico",
+      "Atrofia"
+    ]
+  },
+  {
+    "frase_normal": "Riñón derecho / izquierdo de tamaño y morfología normales.",
+    "hallazgo_oficial": "Nefrectomía",
+    "sinonimos": [
+      "Riñón extirpado",
+      "Ausencia de riñón",
+      "Estado post-nefrectomía"
+    ],
+    "errores_comunes": [
+      "Nefrectomia",
+      "Rinon extirpado",
+      "Post nefrectomia"
+    ]
+  },
+  {
+    "frase_normal": "Riñón derecho / izquierdo de tamaño y morfología normales.",
+    "hallazgo_oficial": "Hipoplasia",
+    "sinonimos": [
+      "Riñón hipoplásico",
+      "Desarrollo incompleto del riñón",
+      "Riñón subdesarrollado"
+    ],
+    "errores_comunes": [
+      "Hipoplasia renal",
+      "Hipoplasia",
+      "Rinon hipoplasico"
+    ]
+  },
+  {
+    "frase_normal": "Riñón derecho / izquierdo de tamaño y morfología normales.",
+    "hallazgo_oficial": "Signos de nefropatía crónica o pielonefritis de repetición",
+    "sinonimos": [
+      "Nefropatía crónica",
+      "Pielonefritis crónica",
+      "Cambios renales crónicos"
+    ],
+    "errores_comunes": [
+      "Nefropatia cronica",
+      "Pielonefritis",
+      "Nefropatia"
+    ]
+  },
+  {
+    "frase_normal": "Riñón derecho / izquierdo de tamaño y morfología normales.",
+    "hallazgo_oficial": "Tumor renal",
+    "sinonimos": [
+      "Masa renal",
+      "Lesión renal ocupante de espacio",
+      "Neoplasia renal"
+    ],
+    "errores_comunes": [
+      "Tumor renal",
+      "Masa renal",
+      "Tumor rinon"
+    ]
+  },
+  {
+    "frase_normal": "Riñón derecho / izquierdo de tamaño y morfología normales.",
+    "hallazgo_oficial": "Litiasis",
+    "sinonimos": [
+      "Cálculo renal",
+      "Piedra en el riñón",
+      "Nefrolitiasis",
+      "Microlitiasis"
+    ],
+    "errores_comunes": [
+      "Litiasis renal",
+      "Litiaris",
+      "Litiasis",
+      "Microlitiasis"
+    ],
+    "nota": "❌  NO INTERPRETAR COMO: Quiste renal (es líquido, no sólido) o Tumor renal (es una masa, no un cálculo)"
+  },
+  {
+    "frase_normal": "Riñón derecho / izquierdo de tamaño y morfología normales.",
+    "hallazgo_oficial": "Quistes sinusales o corticales",
+    "sinonimos": [
+      "Quiste renal simple",
+      "Quistes corticales",
+      "Quistes parapiélicos"
+    ],
+    "errores_comunes": [
+      "Quistes renales",
+      "Quistes rinon",
+      "Quiste simple"
+    ]
+  },
+  {
+    "frase_normal": "Riñón derecho / izquierdo de tamaño y morfología normales.",
+    "hallazgo_oficial": "Cicatrices corticales",
+    "sinonimos": [
+      "Cicatriz renal",
+      "Adelgazamiento cortical",
+      "Irregularidad cortical"
+    ],
+    "errores_comunes": [
+      "Cicatrices corticales",
+      "Cicatriz rinon",
+      "Cicatriz"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales ni dilatación de la vía urinaria derecha / izquierda.",
+    "hallazgo_oficial": "Ectasia pieloureteral",
+    "sinonimos": [
+      "Dilatación pieloureteral",
+      "Hidronefrosis leve",
+      "Dilatación de la pelvis renal y uréter"
+    ],
+    "errores_comunes": [
+      "Ectasia pieloureteral",
+      "Pieloureteral",
+      "Ectasia"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales ni dilatación de la vía urinaria derecha / izquierda.",
+    "hallazgo_oficial": "Dilatación de pelvis y uréter",
+    "sinonimos": [
+      "Pielocaliectasia",
+      "Hidroureteronefrosis",
+      "Dilatación del sistema colector"
+    ],
+    "errores_comunes": [
+      "Dilatacion pelvis ureter",
+      "Pelvis dilatada",
+      "Ureter dilatado"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales ni dilatación de la vía urinaria derecha / izquierda.",
+    "hallazgo_oficial": "Ureterohidronefrosis",
+    "sinonimos": [
+      "Dilatación del uréter y pelvis renal",
+      "Hidronefrosis con hidroureter",
+      "Obstrucción de la vía urinaria"
+    ],
+    "errores_comunes": [
+      "Ureterohidronefrosis",
+      "Hidronefrosis",
+      "Hidroureter"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales ni dilatación de la vía urinaria derecha / izquierda.",
+    "hallazgo_oficial": "Pelvis extrarrenal",
+    "sinonimos": [
+      "Pelvis renal extrahiliar",
+      "Variante anatómica de pelvis renal",
+      "Pelvis renal prominente"
+    ],
+    "errores_comunes": [
+      "Pelvis extrarrenal",
+      "Pelvis extra",
+      "Pelvis renal"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales ni dilatación de la vía urinaria derecha / izquierda.",
+    "hallazgo_oficial": "Síndrome de la unión",
+    "sinonimos": [
+      "Obstrucción de la unión pieloureteral (UPJ)",
+      "Estenosis de la UPJ",
+      "Obstrucción UPJ"
+    ],
+    "errores_comunes": [
+      "Sindrome de la union",
+      "Union pieloureteral",
+      "Estenosis UPJ"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales ni dilatación de la vía urinaria derecha / izquierda.",
+    "hallazgo_oficial": "Engrosamiento urotelial hipercaptante",
+    "sinonimos": [
+      "Urotelio engrosado con realce",
+      "Inflamación urotelial",
+      "Tumor urotelial (si es focal)"
+    ],
+    "errores_comunes": [
+      "Engrosamiento urotelial",
+      "Hipercaptacion urotelial",
+      "Urotelio engrosado"
+    ]
+  },
+  {
+    "frase_normal": "No se observan lesiones focales ni dilatación de la vía urinaria derecha / izquierda.",
+    "hallazgo_oficial": "Tumor de vías",
+    "sinonimos": [
+      "Neoplasia urotelial",
+      "Tumor urotelial",
+      "Masa en vía urinaria"
+    ],
+    "errores_comunes": [
+      "Tumor vias",
+      "Tumor urotelial",
+      "Tumor via urinaria"
+    ]
+  },
+  {
+    "frase_normal": "No se observan adenopatías intraabdominales aumentadas de tamaño.",
+    "hallazgo_oficial": "Adenopatías con necrosis",
+    "sinonimos": [
+      "Ganglios necróticos intraabdominales",
+      "Linfadenopatías necróticas abdominales",
+      "Adenopatías con áreas de necrosis"
+    ],
+    "errores_comunes": [
+      "Adenopatias con necrosis",
+      "Ganglios con necrosis",
+      "Necrosis ganglionar"
+    ]
+  },
+  {
+    "frase_normal": "No se observan adenopatías intraabdominales aumentadas de tamaño.",
+    "hallazgo_oficial": "Conglomerados",
+    "sinonimos": [
+      "Agrupación ganglionar abdominal",
+      "Masa ganglionar intraabdominal",
+      "Nódulos linfáticos agrupados"
+    ],
+    "errores_comunes": [
+      "Conglomerado abdominal",
+      "Conglomerados ganglionares",
+      "Conglomerados linfaticos"
+    ]
+  },
+  {
+    "frase_normal": "No se observan adenopatías intraabdominales aumentadas de tamaño.",
+    "hallazgo_oficial": "Adenopatías aumentadas de tamaño",
+    "sinonimos": [
+      "Ganglios intraabdominales aumentados",
+      "Linfadenopatías abdominales",
+      "Adenopatías significativas"
+    ],
+    "errores_comunes": [
+      "Adenopatias abdominales",
+      "Ganglios abdominales",
+      "Adenopatias"
+    ]
+  },
+  {
+    "frase_normal": "No se observan adenopatías intraabdominales aumentadas de tamaño.",
+    "hallazgo_oficial": "Ganglios pequeños inespecíficos o calcificados o en el límite alto de la normalidad",
+    "sinonimos": [
+      "Ganglios linfáticos pequeños abdominales",
+      "Adenopatías calcificadas abdominales",
+      "Ganglios limítrofes abdominales"
+    ],
+    "errores_comunes": [
+      "Ganglios inespecificos",
+      "Ganglios pequeños",
+      "Ganglios calcificados"
+    ]
+  },
+  {
+    "frase_normal": "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal.",
+    "hallazgo_oficial": "Ascitis",
+    "sinonimos": [
+      "Líquido libre abdominal",
+      "Acumulación de líquido peritoneal",
+      "Derrame peritoneal"
+    ],
+    "errores_comunes": [
+      "Asitis",
+      "Hascitis",
+      "Liquido intraabdominal",
+      "Ascitis"
+    ]
+  },
+  {
+    "frase_normal": "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal.",
+    "hallazgo_oficial": "Colecciones",
+    "sinonimos": [
+      "Acumulaciones líquidas intraabdominales",
+      "Colección líquida abdominal",
+      "Líquido encapsulado"
+    ],
+    "errores_comunes": [
+      "Coleciones",
+      "Coleccion",
+      "Colección liquida"
+    ]
+  },
+  {
+    "frase_normal": "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal.",
+    "hallazgo_oficial": "Neumoperitoneo",
+    "sinonimos": [
+      "Aire libre intraabdominal",
+      "Gas libre subdiafragmático",
+      "Perforación (si hay contexto)"
+    ],
+    "errores_comunes": [
+      "Neumoperitoneo",
+      "Aire libre"
+    ]
+  },
+  {
+    "frase_normal": "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal.",
+    "hallazgo_oficial": "Aumento de densidad de la grasa",
+    "sinonimos": [
+      "Estrías de grasa",
+      "Infiltración grasa",
+      "Densificación de la grasa"
+    ],
+    "errores_comunes": [
+      "Aumento densidad grasa",
+      "Grasa densa",
+      "Densidad grasa"
+    ]
+  },
+  {
+    "frase_normal": "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal.",
+    "hallazgo_oficial": "Trabeculación de la grasa",
+    "sinonimos": [
+      "Engrosamiento de la grasa",
+      "Reticulación de la grasa",
+      "Inflamación de la grasa"
+    ],
+    "errores_comunes": [
+      "Trabeculacion grasa",
+      "Grasa trabeculada",
+      "Trabeculacion"
+    ]
+  },
+  {
+    "frase_normal": "No se observan colecciones, neumoperitoneo ni líquido libre intraabdominal.",
+    "hallazgo_oficial": "Carcinomatosis peritoneal",
+    "sinonimos": [
+      "Siembra peritoneal",
+      "Nódulos peritoneales",
+      "Enfermedad peritoneal difusa"
+    ],
+    "errores_comunes": [
+      "Carcinomatosis peritoneal",
+      "Carcinomatosis",
+      "Siembra peritoneal"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Ateromatosis aortoiliaca calcificada",
+    "sinonimos": [
+      "Calcificaciones aortoilíacas",
+      "Aterosclerosis aortoilíaca",
+      "Enfermedad ateromatosa aortoilíaca"
+    ],
+    "errores_comunes": [
+      "Ateromatosis aortoiliaca",
+      "Ateromatosis",
+      "Calcificaciones aorta"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Aumento de tamaño de la próstata",
+    "sinonimos": [
+      "Hiperplasia prostática",
+      "Próstata agrandada",
+      "Prostatomegalia"
+    ],
+    "errores_comunes": [
+      "Aumento prostata",
+      "Prostata grande",
+      "Hiperplasia prostata"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Hernias inguinoescrotales",
+    "sinonimos": [
+      "Hernia inguinal",
+      "Hernia escrotal",
+      "Hernia inguinofemoral"
+    ],
+    "errores_comunes": [
+      "Hernias inguinoescrotales",
+      "Hernia inguinal",
+      "Hernia"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Cambios degenerativos esqueléticos",
+    "sinonimos": [
+      "Artrosis",
+      "Osteoartritis",
+      "Degeneración articular"
+    ],
+    "errores_comunes": [
+      "Cambios degenerativos",
+      "Artrosis",
+      "Degenerativos"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Cambios post-IQ por prótesis de cadera izquierda",
+    "sinonimos": [
+      "Estado post-quirúrgico de cadera",
+      "Prótesis de cadera",
+      "Artroplastia de cadera"
+    ],
+    "errores_comunes": [
+      "Cambios post IQ cadera",
+      "Protesis cadera",
+      "Post IQ"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Cambios post-IQ por hemicolectomía derecha",
+    "sinonimos": [
+      "Estado post-hemicolectomía",
+      "Resección de colon derecho",
+      "Cambios postquirúrgicos de colon"
+    ],
+    "errores_comunes": [
+      "Cambios post IQ hemicolectomia",
+      "Hemicolectomia",
+      "Post IQ colon"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Engrosamiento mural circunferencial o segmentario",
+    "sinonimos": [
+      "Engrosamiento de la pared intestinal",
+      "Engrosamiento mural",
+      "Inflamación de la pared"
+    ],
+    "errores_comunes": [
+      "Engrosamiento mural",
+      "Engrosamiento intestinal",
+      "Engrosamiento"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Cambios inflamatorios tipo diverticulitis",
+    "sinonimos": [
+      "Diverticulitis aguda",
+      "Inflamación de divertículos",
+      "Signos de diverticulitis"
+    ],
+    "errores_comunes": [
+      "Diverticulitis",
+      "Inflamacion diverticulos"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Cambios inflamatorios tipo colitis o proctitis",
+    "sinonimos": [
+      "Colitis",
+      "Proctitis",
+      "Inflamación de colon/recto"
+    ],
+    "errores_comunes": [
+      "Colitis",
+      "Proctitis",
+      "Inflamacion colon"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Trabeculación grasa mesentérica adyacente",
+    "sinonimos": [
+      "Estrías de grasa mesentérica",
+      "Infiltración grasa mesentérica",
+      "Inflamación mesentérica"
+    ],
+    "errores_comunes": [
+      "Trabeculacion grasa mesenterica",
+      "Grasa mesenterica",
+      "Trabeculacion"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Engrosamiento rectal hipodenso",
+    "sinonimos": [
+      "Pared rectal engrosada",
+      "Recto engrosado",
+      "Proctitis (si hay contexto)"
+    ],
+    "errores_comunes": [
+      "Engrosamiento rectal",
+      "Recto engrosado",
+      "Hipodenso rectal"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Quiste ovárico",
+    "sinonimos": [
+      "Lesión quística ovárica",
+      "Quiste simple de ovario",
+      "Quiste anexial",
+      "Quiste en ovario"
+    ],
+    "errores_comunes": [
+      "Quiste ovarico",
+      "Quiste ovario",
+      "Quiste",
+      "Quiste en el ovario"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Aumento de la circulación venosa colateral periuterina",
+    "sinonimos": [
+      "Varices pélvicas",
+      "Congestión venosa pélvica",
+      "Venas periuterinas dilatadas",
+      "Síndrome de congestión pélvica"
+    ],
+    "errores_comunes": [
+      "Aumento circulacion venosa",
+      "Varices pelvicas",
+      "Venas periuterinas",
+      "Circulacion colateral"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Cambios post-IQ...",
+    "sinonimos": [
+      "Estado postquirúrgico",
+      "Secuelas de cirugía",
+      "Cambios post-operatorios",
+      "Cambios por intervención previa"
+    ],
+    "errores_comunes": [
+      "Cambios post IQ",
+      "Post IQ",
+      "Postoperatorio",
+      "Post cirugia"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Patología musculoesquelética",
+    "sinonimos": [
+      "Lesiones óseas",
+      "Cambios degenerativos óseos",
+      "Fractura (si hay contexto)",
+      "Alteraciones musculoesqueléticas"
+    ],
+    "errores_comunes": [
+      "Patologia musculoesqueletica",
+      "Musculoesqueletica",
+      "Patologia osea",
+      "Huesos"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Ateromatosis aortoiliaca calcificada",
+    "sinonimos": [
+      "Calcificaciones aortoilíacas",
+      "Aterosclerosis aortoilíaca",
+      "Enfermedad ateromatosa aortoilíaca",
+      "Placas de ateroma en aorta"
+    ],
+    "errores_comunes": [
+      "Ateromatosis aortoiliaca",
+      "Ateromatosis",
+      "Calcificaciones aorta",
+      "Aorta calcificada"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Aumento de tamaño de la próstata",
+    "sinonimos": [
+      "Hiperplasia prostática",
+      "Próstata agrandada",
+      "Prostatomegalia",
+      "Próstata voluminosa"
+    ],
+    "errores_comunes": [
+      "Aumento prostata",
+      "Prostata grande",
+      "Hiperplasia prostata",
+      "Prostata aumentada"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Engrosamiento mural circunferencial o segmentario",
+    "sinonimos": [
+      "Engrosamiento de la pared intestinal",
+      "Engrosamiento mural",
+      "Inflamación de la pared intestinal",
+      "Engrosamiento de asa intestinal"
+    ],
+    "errores_comunes": [
+      "Engrosamiento mural",
+      "Engrosamiento intestinal",
+      "Engrosamiento",
+      "Pared engrosada"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Cambios inflamatorios tipo diverticulitis",
+    "sinonimos": [
+      "Diverticulitis aguda",
+      "Inflamación de divertículos",
+      "Signos de diverticulitis",
+      "Diverticulitis complicada/no complicada"
+    ],
+    "errores_comunes": [
+      "Diverticulitis",
+      "Inflamacion diverticulos",
+      "Diverticulitis aguda"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Cambios inflamatorios tipo colitis o proctitis",
+    "sinonimos": [
+      "Colitis",
+      "Proctitis",
+      "Inflamación de colon/recto",
+      "Pancolitis"
+    ],
+    "errores_comunes": [
+      "Colitis",
+      "Proctitis",
+      "Inflamacion colon"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Trabeculación grasa mesentérica adyacente",
+    "sinonimos": [
+      "Estrías de grasa mesentérica",
+      "Infiltración grasa mesentérica",
+      "Inflamación mesentérica",
+      "Edema de la grasa mesentérica"
+    ],
+    "errores_comunes": [
+      "Trabeculacion grasa mesenterica",
+      "Grasa mesenterica",
+      "Trabeculacion",
+      "Mesenterio inflamado"
+    ]
+  },
+  {
+    "frase_normal": "No hay ninguna frase normal. (Zona: Otros o sin clara localización)",
+    "hallazgo_oficial": "Engrosamiento rectal hipodenso",
+    "sinonimos": [
+      "Pared rectal engrosada",
+      "Recto engrosado",
+      "Proctitis (si hay contexto)",
+      "Engrosamiento de la pared del recto"
+    ],
+    "errores_comunes": [
+      "Engrosamiento rectal",
+      "Recto engrosado",
+      "Hipodenso rectal",
+      "Engrosamiento recto"
+    ]
+  }
+]
