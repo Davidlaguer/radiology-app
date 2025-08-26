@@ -2,13 +2,13 @@
 // src/App.tsx
 import { useMemo, useState } from 'react';
 
-// Datos estructurados
+// Datos estructurados de /src/data
 import normalPhrases from './data/normalPhrases.json';
 import findingsJson from './data/findings.json';
 import fuzzyLexicon from './data/fuzzyLexicon.json';
 import presets from './data/presets.json';
 
-// Helpers de plantillas
+// Helpers de plantillas (TÍTULO/TÉCNICA/HALLAZGOS)
 import {
   buildReportTitle,
   buildTechniqueBlock,
@@ -19,29 +19,28 @@ import {
   type ContrastTag,
 } from './prompts/templates';
 
-// Postproceso y ensamblado del bloque "HALLAZGOS"
-import { postprocessLines, buildFindingsBlock } from './utils/postprocess';
+// Postproceso (aplica normas 1–11 + agregaciones finales)
+import { applyPostprocessNorms } from './utils/postprocess';
 
-// Constantes
+// Literales
 import { DEFAULT_CLOSING_TEXT } from './config/constants';
 
-// UI
-import Modal from './components/Modal';
-
 // =========================
-// Tipos
+// Tipos locales
 // =========================
 type NormalPhrase = {
   text: string;
   regions: string[];
-  contrast: string[];
+  contrast: string[]; // 'SIEMPRE' | 'CON CONTRASTE' | 'SIN CONTRASTE'
 };
+
 type FindingEntry = {
   zona_anatomica: string;
-  frase_normal: string;
+  frase_normal: string; // puede ser "Null." en zona Otros
   hallazgos_patologicos: string[];
   hallazgos_adicionales: string[];
 };
+
 type FuzzyEntry = {
   frase_normal: string;
   hallazgo_oficial: string;
@@ -51,9 +50,10 @@ type FuzzyEntry = {
 };
 
 // =========================
-// Utils
+// Utilidades internas
 // =========================
-const SENTENCE_SPLIT = /[.\n]+/g;
+
+const SENTENCE_SPLIT = /[.]+|\n+/g;
 
 function normalize(s: string) {
   return s
@@ -65,6 +65,7 @@ function normalize(s: string) {
     .trim();
 }
 
+// Construye catálogo de hallazgos → { tipo, zona, frase_normal }
 function buildFindingCatalog(findingTable: FindingEntry[]) {
   const pathological = new Map<string, { zona: string; fraseNormal: string }>();
   const additional = new Map<string, { zona: string; fraseNormal: string }>();
@@ -81,13 +82,16 @@ function buildFindingCatalog(findingTable: FindingEntry[]) {
   return { pathological, additional };
 }
 
+// Construye diccionario fuzzy (sinónimo/errata) → hallazgo_oficial
 function buildFuzzyIndex(fuzzyTable: FuzzyEntry[]) {
   const index = new Map<string, { oficial: string; excluir?: string[]; fraseNormal?: string }>();
   for (const e of fuzzyTable) {
     const target = e.hallazgo_oficial?.trim();
     if (!target) continue;
+
     const pack = { oficial: target, excluir: e.excluir, fraseNormal: e.frase_normal };
     index.set(normalize(target), pack);
+
     for (const s of e.sinonimos || []) index.set(normalize(s), pack);
     for (const err of e.errores_comunes || []) index.set(normalize(err), pack);
   }
@@ -99,10 +103,15 @@ function contrastMatches(needed: string[], studyContrast: ContrastTag | null) {
   if (!studyContrast) return false;
   return needed.includes(studyContrast);
 }
+
 function regionsMatch(needed: string[], studyRegions: RegionTag[]) {
   const set = new Set(studyRegions);
   return needed.some(r => set.has(r as RegionTag));
 }
+
+/**
+ * Filtra la PLANTILLA BASE de frases normales según etiquetas (región/contraste).
+ */
 function buildBaseTemplate(
   allNormals: NormalPhrase[],
   regions: RegionTag[],
@@ -112,83 +121,179 @@ function buildBaseTemplate(
   for (const row of allNormals) {
     const okRegion = regionsMatch(row.regions, regions);
     const okContrast = contrastMatches(row.contrast, contrast);
-    if (okRegion && okContrast) lines.push(row.text.trim());
+    if (okRegion && okContrast) {
+      lines.push(row.text.trim());
+    }
   }
   return lines;
 }
+
+// Inserta "Sin otros hallazgos." si no existe ya
 function ensureClosing(lines: string[]) {
   const closing = (DEFAULT_CLOSING_TEXT || 'Sin otros hallazgos.').trim();
   const has = lines.some(l => normalize(l) === normalize(closing));
   return has ? lines : [...lines, closing];
 }
+
 function ensureDot(s: string) {
   const t = s.trim();
   if (!t) return t;
   return /[.:]$/.test(t) ? t : `${t}.`;
 }
 
+/**
+ * Deducción automática de etiquetas a partir de la primera frase del dictado.
+ *
+ * Ejemplos válidos:
+ * - "TC de tórax con contraste"
+ * - "TC toracoabdominal sin contraste"
+ * - "TC de tórax y abdomen con contraste"
+ * - "TC tórax abdomen con y sin contraste"  → prioriza "CON CONTRASTE" si aparece
+ */
+function parseStudyTagsFromFirstSentence(first: string): {
+  regions: RegionTag[];
+  contrast: ContrastTag | null;
+  labelString: string; // ej. "[TC-TORAX] [TC-ABDOMEN] [CON CONTRASTE]"
+} {
+  const n = normalize(first);
+
+  // Debe contener "tc"
+  if (!/\btc\b/.test(n)) {
+    return { regions: [], contrast: null, labelString: '' };
+  }
+
+  // Regiones
+  const regionsSet = new Set<RegionTag>();
+
+  // TÓRAX
+  if (/\btorax\b|\bt[oó]rax\b/.test(n)) {
+    regionsSet.add('TC-TORAX' as RegionTag);
+  }
+  // ABDOMEN (incluye abdomen-pelvis / toracoabdominal / abdominopélvico)
+  if (
+    /\babdomen\b|\babdominal\b|\babdominopelv|abdomen y pelvis|abdomino[-\s]?p[eé]lvic/.test(n) ||
+    /\btoracoabdominal\b/.test(n)
+  ) {
+    regionsSet.add('TC-ABDOMEN' as RegionTag);
+  }
+
+  // "toracoabdominal" → añade tórax si no estaba
+  if (/\btoracoabdominal\b/.test(n)) {
+    regionsSet.add('TC-TORAX' as RegionTag);
+  }
+
+  // Contraste
+  let contrast: ContrastTag | null = null;
+  if (/\bcon contraste\b|\bcon realce\b|\bcon iv\b/.test(n)) {
+    contrast = 'CON CONTRASTE' as ContrastTag;
+  }
+  if (/\bsin contraste\b|\bsin iv\b|\bsin realce\b/.test(n)) {
+    if (!contrast) contrast = 'SIN CONTRASTE' as ContrastTag;
+  }
+
+  // Label string sólo informativa
+  const labelString =
+    Array.from(regionsSet)
+      .map(r => `[${r}]`)
+      .concat(contrast ? [`[${contrast}]`] : [])
+      .join(' ') || '';
+
+  return { regions: Array.from(regionsSet), contrast, labelString };
+}
+
+/**
+ * Separa el dictado en:
+ *  - firstLine: primera frase (tipo de TC)
+ *  - findingsList: el resto (hallazgos, como lista)
+ */
+function splitDictation(raw: string): { firstLine: string; findingsList: string[] } {
+  const parts = (raw.match(SENTENCE_SPLIT) ? raw.split(SENTENCE_SPLIT) : [raw])
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  const firstLine = parts[0] || '';
+  const findingsList = parts.slice(1);
+  return { firstLine, findingsList };
+}
+
 // =========================
-// App Principal
+// Componente principal
 // =========================
 export default function App() {
-  // Estado
-  const [labelsRaw, setLabelsRaw] = useState<string>('');
-  const [dictation, setDictation] = useState<string>('');
-  const [forceTemplate, setForceTemplate] = useState<boolean>(false);
+  // Un único cuadro de texto para **todo** el dictado
+  const [dictationRaw, setDictationRaw] = useState<string>('');
   const [report, setReport] = useState<string>('');
-  const [openModal, setOpenModal] = useState<boolean>(false);
 
-  // Derivados
-  const regions = useMemo<RegionTag[]>(() => getSelectedRegions(splitTags(labelsRaw)), [labelsRaw]);
-  const contrast = useMemo<ContrastTag | null>(() => getSelectedContrast(splitTags(labelsRaw)), [labelsRaw]);
-  const technique = useMemo(() => buildTechniqueBlock(regions, contrast), [regions, contrast]);
-  const title = useMemo(() => buildReportTitle(regions, contrast), [regions, contrast]);
-
+  // Índices (memo)
   const findingCatalog = useMemo(() => buildFindingCatalog(findingsJson as FindingEntry[]), []);
   const fuzzyIndex = useMemo(() => buildFuzzyIndex(fuzzyLexicon as FuzzyEntry[]), []);
 
-  function splitTags(s: string): string[] {
-    const inBrackets = Array.from(s.matchAll(/\[([^\]]+)\]/g)).map(m => m[1]);
-    if (inBrackets.length) return inBrackets;
-    return s.split(/[\s,;]+/).filter(Boolean);
-  }
+  // 1) Separa primera frase (tipo de TC) vs resto (hallazgos como lista)
+  const { firstLine, findingsList } = useMemo(() => splitDictation(dictationRaw), [dictationRaw]);
+
+  // 2) Deducción de etiquetas desde primera frase
+  const auto = useMemo(() => parseStudyTagsFromFirstSentence(firstLine), [firstLine]);
+
+  // 3) Construcción de título y técnica usando helpers oficiales
+  const regions = useMemo<RegionTag[]>(
+    () => getSelectedRegions(auto.regions as string[]),
+    [auto.regions]
+  );
+  const contrast = useMemo<ContrastTag | null>(
+    () => getSelectedContrast(auto.contrast ? [auto.contrast] : []),
+    [auto.contrast]
+  );
+  const technique = useMemo(() => buildTechniqueBlock(regions, contrast), [regions, contrast]);
+  const title = useMemo(() => buildReportTitle(regions, contrast), [regions, contrast]);
 
   function handleGenerate() {
-    // 1) plantilla base por etiquetas
+    // 0) Validaciones mínimas
+    if (!firstLine.trim()) {
+      setReport('⚠️ La primera frase debe indicar el tipo de TC (por ejemplo: "TC de tórax con contraste").');
+      return;
+    }
+
+    // 1) Construir base de frases normales según etiquetas
     let baseLines = buildBaseTemplate(normalPhrases as NormalPhrase[], regions, contrast);
 
-    // 2) parse dictado
-    const rawItems = (dictation.match(SENTENCE_SPLIT) ? dictation.split(SENTENCE_SPLIT) : [dictation])
-      .map(x => x.trim())
-      .filter(Boolean);
+    // 2) Procesar hallazgos dictados (resto de frases)
+    const rawItems = findingsList.map(x => x.trim()).filter(Boolean);
 
-    const forceByText = rawItems.some(x => normalize(x).includes('valida frases normales'));
-    const templateMode = forceTemplate || forceByText;
+    // Detectar activación por texto: si la **última** frase incluye "valida frases normales"
+    const last = rawItems[rawItems.length - 1] || '';
+    const templateMode = /valida\s+frases\s+normales/i.test(last);
+    const itemsForMapping = templateMode ? rawItems.slice(0, -1) : rawItems;
 
+    // Normalizar y mapear cada hallazgo a {tipo, zona, fraseNormal, texto}
     type MappedFinding = {
       tipo: 'patologico' | 'adicional' | 'suelto';
       zona?: string;
       fraseNormal?: string;
-      texto: string;
-      oficial?: string;
+      texto: string; // texto final a insertar
+      oficial?: string; // el hallazgo oficial si proviene de fuzzy
     };
 
     const mapped: MappedFinding[] = [];
 
-    for (const item of rawItems) {
+    for (const item of itemsForMapping) {
       const n = normalize(item);
-      if (!n || n.includes('valida frases normales')) continue;
+      if (!n) continue;
 
+      // 2.a) exact match en tablas
       let mf: MappedFinding | null = null;
 
       if (!mf) {
+        // patológico exacto
         const hitPat = findingCatalog.pathological.get(n);
         if (hitPat) mf = { tipo: 'patologico', zona: hitPat.zona, fraseNormal: hitPat.fraseNormal, texto: item };
       }
       if (!mf) {
+        // adicional exacto
         const hitAdd = findingCatalog.additional.get(n);
         if (hitAdd) mf = { tipo: 'adicional', zona: hitAdd.zona, fraseNormal: hitAdd.fraseNormal, texto: item };
       }
+
+      // 2.b) fuzzy → mapear a oficial y volver a buscar en catálogo por oficial
       if (!mf) {
         const fz = fuzzyIndex.get(n);
         if (fz && !(fz.excluir || []).some(ex => normalize(ex) === n)) {
@@ -199,14 +304,23 @@ export default function App() {
           else if (hitAdd) mf = { tipo: 'adicional', zona: hitAdd.zona, fraseNormal: hitAdd.fraseNormal, texto: fz.oficial, oficial: fz.oficial };
         }
       }
-      if (!mf) mf = { tipo: 'suelto', texto: item };
+
+      // 2.c) si no encaja en nada, queda como suelto (va antes del cierre)
+      if (!mf) {
+        mf = { tipo: 'suelto', texto: item };
+      }
+
       mapped.push(mf);
     }
 
-    // 3) integrar
+    // 3) Aplicar reglas de integración:
+    //    - patológico reemplaza su frase normal
+    //    - adicional se añade detrás de la frase normal SIN borrarla
+    //    - suelto va justo antes de "Sin otros hallazgos."
     let working = [...baseLines];
-    const addQueueByNormal = new Map<string, string[]>();
-    const replaceByNormal = new Map<string, string>();
+
+    const addQueueByNormal = new Map<string, string[]>(); // frase normal → [adicionales...]
+    const replaceByNormal = new Map<string, string>();    // frase normal → patológico final
     const looseFindings: string[] = [];
 
     for (const mf of mapped) {
@@ -221,7 +335,7 @@ export default function App() {
       }
     }
 
-    // reemplazos sobre base
+    // 3.a) aplicar REEMPLAZOS patológicos sobre la base
     working = working
       .map(line => {
         const rep = replaceByNormal.get(line);
@@ -229,7 +343,7 @@ export default function App() {
       })
       .filter(Boolean);
 
-    // añadidos detrás de su frase normal
+    // 3.b) aplicar AÑADIDOS detrás de su frase normal (si no fue reemplazada)
     working = working.flatMap(line => {
       const rep = replaceByNormal.get(line);
       if (rep) {
@@ -242,116 +356,92 @@ export default function App() {
       }
     });
 
-    // sueltos antes del cierre
+    // 3.c) añadir hallazgos sueltos al final (antes de la frase de cierre)
     working = ensureClosing(working);
     if (looseFindings.length) {
       const closing = (DEFAULT_CLOSING_TEXT || 'Sin otros hallazgos.').trim();
       const idx = working.findIndex(l => normalize(l) === normalize(closing));
-      if (idx === -1) working.push(...looseFindings);
-      else working.splice(idx, 0, ...looseFindings);
+      if (idx === -1) {
+        working.push(...looseFindings);
+      } else {
+        working.splice(idx, 0, ...looseFindings);
+      }
     }
 
-    // 4) postproceso + bloque hallazgos
-    const finalLines = postprocessLines(working, { modeTemplate: templateMode });
-    const hallazgosBlock = buildFindingsBlock(finalLines);
+    // 4) MODO PLANTILLA (Norma 11) si la última frase era "Valida frases normales."
+    working = applyPostprocessNorms(working, {
+      templateMode: templateMode,
+    });
 
+    // 5) Construir salida con formato obligatorio
+    const body = working.join(' ');
     const finalText =
       `${title}\n\n` +
       `${technique}\n\n` +
       `${buildHallazgosHeader()}\n` +
-      `${hallazgosBlock}`;
+      `${body}`;
 
     setReport(finalText);
-    setOpenModal(true);
   }
 
-  // UI: Diseño moderno basado en el brief
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <h1 className="app-title">Generador de Informes TC</h1>
-        <span className="app-subtitle">v2.0</span>
-      </header>
+    <div
+      className="app"
+      style={{
+        maxWidth: 760,
+        margin: '36px auto',
+        padding: '0 16px',
+        fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial',
+      }}
+    >
+      <h1 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 16px' }}>
+        Generador de informes TC
+      </h1>
 
-      <div className="form-container">
-        <div className="form-group">
-          <label className="form-label">Etiquetas del estudio</label>
-          <input
-            className="form-input"
-            placeholder="[TC-TORAX] [CON CONTRASTE] — o escribe: TC-TORAX CON CONTRASTE"
-            value={labelsRaw}
-            onChange={e => setLabelsRaw(e.target.value)}
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Dictado de hallazgos</label>
-          <textarea
-            className="form-textarea"
-            placeholder="Derrame pleural izquierdo. Quistes hepáticos. Valida frases normales."
-            value={dictation}
-            onChange={e => setDictation(e.target.value)}
-            rows={6}
-          />
-        </div>
-
-        <div className="form-controls">
-          <div className="checkbox-group">
-            <input
-              type="checkbox"
-              id="forceTemplate"
-              checked={forceTemplate}
-              onChange={e => setForceTemplate(e.target.checked)}
-            />
-            <label htmlFor="forceTemplate" className="checkbox-label">
-              Forzar "valida frases normales"
-            </label>
-          </div>
-
-          <button onClick={handleGenerate} className="btn-primary">
-            Generar informe
-          </button>
-        </div>
-      </div>
-
-      <div className="stats-container">
-        <div className="stat-item">P: {Array.isArray(presets) ? presets.length : 0}</div>
-        <div className="stat-item">N: {Array.isArray(normalPhrases) ? normalPhrases.length : 0}</div>
-        <div className="stat-item">F: {Array.isArray(findingsJson) ? findingsJson.length : 0}</div>
-        <div className="stat-item">Φ: {Array.isArray(fuzzyLexicon) ? fuzzyLexicon.length : 0}</div>
-      </div>
-
-      <Modal
-        open={openModal}
-        onClose={() => setOpenModal(false)}
-        title="Informe generado"
-        width={760}
-        footer={
-          <>
-            <button
-              onClick={() => {
-                navigator.clipboard?.writeText(report);
-              }}
-              className="btn-secondary"
-            >
-              Copiar
-            </button>
-            <button
-              onClick={() => setOpenModal(false)}
-              className="btn-primary"
-            >
-              Cerrar
-            </button>
-          </>
+      <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Dictado completo</label>
+      <textarea
+        placeholder={
+          '1ª frase = tipo de TC (p. ej.: "TC de tórax con contraste").\n' +
+          'Luego los hallazgos, separados por punto.\n' +
+          'Si terminas con "Valida frases normales.", se aplicará la validación final.'
         }
+        value={dictationRaw}
+        onChange={e => setDictationRaw(e.target.value)}
+        rows={8}
+        style={{ width: '100%', marginBottom: 12 }}
+      />
+
+      <button
+        onClick={handleGenerate}
+        style={{
+          padding: '10px 16px',
+          border: '1px solid #ccc',
+          borderRadius: 8,
+          cursor: 'pointer',
+          background: '#111',
+          color: '#fff',
+          fontWeight: 600,
+        }}
       >
+        Generar informe
+      </button>
+
+      <div style={{ marginTop: 20 }}>
+        <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Informe final</label>
         <textarea
           readOnly
           value={report}
           rows={18}
-          className="report-textarea"
+          style={{ width: '100%' }}
         />
-      </Modal>
+      </div>
+
+      {/* Info mínima para debug (no UI extra) */}
+      <div style={{ marginTop: 12, fontSize: 12, color: '#888' }}>
+        <div>Regiones detectadas: {regions.join(', ') || '—'}</div>
+        <div>Contraste detectado: {contrast || '—'}</div>
+        <div>Presets: {Array.isArray(presets) ? presets.length : 0} · Normales: {Array.isArray(normalPhrases) ? normalPhrases.length : 0} · Hallazgos: {Array.isArray(findingsJson) ? findingsJson.length : 0} · Fuzzy: {Array.isArray(fuzzyLexicon) ? fuzzyLexicon.length : 0}</div>
+      </div>
     </div>
   );
 }
