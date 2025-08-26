@@ -1,3 +1,4 @@
+
 // src/App.tsx
 import { useMemo, useState } from 'react';
 
@@ -18,7 +19,7 @@ import {
   type ContrastTag,
 } from './prompts/templates';
 
-// Postproceso y ensamblado del bloque “HALLAZGOS”
+// Postproceso y ensamblado del bloque "HALLAZGOS"
 import { postprocessLines, buildFindingsBlock } from './utils/postprocess';
 
 // Constantes
@@ -127,12 +128,12 @@ function ensureDot(s: string) {
 }
 
 // =========================
-// App (popup compacto)
+// App Principal
 // =========================
 export default function App() {
   // Estado
-  const [labelsRaw, setLabelsRaw] = useState<string>('');     // etiquetas del estudio
-  const [dictation, setDictation] = useState<string>('');     // dictado (de tu otra app, aquí pegado)
+  const [labelsRaw, setLabelsRaw] = useState<string>('');
+  const [dictation, setDictation] = useState<string>('');
   const [forceTemplate, setForceTemplate] = useState<boolean>(false);
   const [report, setReport] = useState<string>('');
   const [openModal, setOpenModal] = useState<boolean>(false);
@@ -264,79 +265,60 @@ export default function App() {
     setOpenModal(true);
   }
 
-  // UI: popup compacto (una sola columna, tamaño reducido)
+  // UI: Diseño moderno basado en el brief
   return (
-    <div
-      style={{
-        width: 440,
-        margin: '24px auto',
-        padding: 12,
-        fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial',
-        border: '1px solid #e6e6e6',
-        borderRadius: 12,
-        background: '#fafafa',
-      }}
-    >
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <h1 style={{ fontSize: 16, margin: 0 }}>CT Report Helper</h1>
-        <span style={{ fontSize: 11, color: '#888' }}>mini</span>
+    <div className="app-container">
+      <header className="app-header">
+        <h1 className="app-title">Generador de Informes TC</h1>
+        <span className="app-subtitle">v2.0</span>
       </header>
 
-      <div style={{ display: 'grid', gap: 8 }}>
-        <div>
-          <label style={{ fontWeight: 600, fontSize: 12 }}>Etiquetas del estudio</label>
+      <div className="form-container">
+        <div className="form-group">
+          <label className="form-label">Etiquetas del estudio</label>
           <input
-            placeholder="[TC-TORAX] [CON CONTRASTE]  — o escribe: TC-TORAX CON CONTRASTE"
+            className="form-input"
+            placeholder="[TC-TORAX] [CON CONTRASTE] — o escribe: TC-TORAX CON CONTRASTE"
             value={labelsRaw}
             onChange={e => setLabelsRaw(e.target.value)}
-            style={{ width: '100%', marginTop: 4, border: '1px solid #ddd', borderRadius: 8, padding: '8px 10px', fontSize: 13 }}
           />
         </div>
 
-        <div>
-          <label style={{ fontWeight: 600, fontSize: 12 }}>Pega aquí el dictado</label>
+        <div className="form-group">
+          <label className="form-label">Dictado de hallazgos</label>
           <textarea
+            className="form-textarea"
             placeholder="Derrame pleural izquierdo. Quistes hepáticos. Valida frases normales."
             value={dictation}
             onChange={e => setDictation(e.target.value)}
-            rows={5}
-            style={{ width: '100%', marginTop: 4, border: '1px solid #ddd', borderRadius: 8, padding: '8px 10px', fontSize: 13 }}
+            rows={6}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
-          <label style={{ display: 'inline-flex', gap: 6, alignItems: 'center', fontSize: 12, color: '#333' }}>
+        <div className="form-controls">
+          <div className="checkbox-group">
             <input
               type="checkbox"
+              id="forceTemplate"
               checked={forceTemplate}
               onChange={e => setForceTemplate(e.target.checked)}
             />
-            <span>Forzar “valida frases normales”</span>
-          </label>
+            <label htmlFor="forceTemplate" className="checkbox-label">
+              Forzar "valida frases normales"
+            </label>
+          </div>
 
-          <button
-            onClick={handleGenerate}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #111',
-              borderRadius: 10,
-              cursor: 'pointer',
-              background: '#111',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: 13,
-            }}
-          >
+          <button onClick={handleGenerate} className="btn-primary">
             Generar informe
           </button>
         </div>
       </div>
 
-      <div style={{ marginTop: 8, fontSize: 11, color: '#888', display: 'flex', gap: 10 }}>
-        <div>P: {Array.isArray(presets) ? presets.length : 0}</div>
-        <div>N: {Array.isArray(normalPhrases) ? normalPhrases.length : 0}</div>
-        <div>F: {Array.isArray(findingsJson) ? findingsJson.length : 0}</div>
-        <div>Φ: {Array.isArray(fuzzyLexicon) ? fuzzyLexicon.length : 0}</div>
+      <div className="stats-container">
+        <div className="stat-item">P: {Array.isArray(presets) ? presets.length : 0}</div>
+        <div className="stat-item">N: {Array.isArray(normalPhrases) ? normalPhrases.length : 0}</div>
+        <div className="stat-item">F: {Array.isArray(findingsJson) ? findingsJson.length : 0}</div>
+        <div className="stat-item">Φ: {Array.isArray(fuzzyLexicon) ? fuzzyLexicon.length : 0}</div>
       </div>
 
       <Modal
@@ -350,13 +332,13 @@ export default function App() {
               onClick={() => {
                 navigator.clipboard?.writeText(report);
               }}
-              style={{ border: '1px solid #ddd', background: '#fff', borderRadius: 8, padding: '8px 12px', cursor: 'pointer' }}
+              className="btn-secondary"
             >
               Copiar
             </button>
             <button
               onClick={() => setOpenModal(false)}
-              style={{ border: '1px solid #111', background: '#111', color: '#fff', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', fontWeight: 700 }}
+              className="btn-primary"
             >
               Cerrar
             </button>
@@ -367,7 +349,7 @@ export default function App() {
           readOnly
           value={report}
           rows={18}
-          style={{ width: '100%', border: '1px solid #eee', borderRadius: 8, padding: 12, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace' }}
+          className="report-textarea"
         />
       </Modal>
     </div>
