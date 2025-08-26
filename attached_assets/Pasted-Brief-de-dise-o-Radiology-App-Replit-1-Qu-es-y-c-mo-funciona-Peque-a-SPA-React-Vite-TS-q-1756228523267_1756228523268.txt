@@ -1,0 +1,146 @@
+Brief de diseño – Radiology App (Replit)
+1) Qué es y cómo funciona
+
+Pequeña SPA (React + Vite, TS) que genera informes radiológicos a partir de:
+
+Etiquetas del estudio (p. ej. [TC-TORAX] [CON CONTRASTE]).
+
+Dictado de hallazgos (frases separadas por punto).
+
+La lógica ya está completa: mapea hallazgos → zonas; sustituye frases normales; añade hallazgos “adicionales”; coloca sueltos antes del cierre; aplica postproceso; y muestra el informe final en un modal.
+
+Objetivo de este encargo: aplicar estilo/UI para que la app parezca un popup compacto, con un textarea grande para pegar el dictado y un botón “Generar informe”. El informe debe abrirse en un modal limpio. El look & feel debe recordar a On Call Helper (minimal, claro, tipografía nítida, bordes suaves, sombras sutiles).
+
+⚠️ NO tocar la lógica ni los datos. Solo maquetación/estilos/markup mínimo (sin cambiar estructuras de datos ni nombres de funciones).
+
+2) Cómo ejecutar
+npm i
+npm run dev
+# abre http://localhost:5173
+
+3) Estructura relevante
+src/
+  App.tsx                # Vista principal (inputs + botón + abre Modal con informe)
+  components/Modal.tsx   # Componente modal
+  utils/postprocess.ts   # Lógica de postproceso (NO tocar)
+  prompts/templates.ts   # Helpers de TÍTULO/TÉCNICA/HALLAZGOS (NO tocar)
+  config/constants.ts    # Texto de cierre por defecto (NO tocar)
+  data/
+    normalPhrases.json   # Plantilla base (NO tocar)
+    findings.json        # Catálogo zonas/hallazgos (NO tocar)
+    fuzzyLexicon.json    # Sinónimos/erratas (NO tocar)
+    presets.json         # Presets (no usados de momento)
+main.tsx, vite.config.ts # Arranque Vite
+
+4) Flujo UI (qué verás al usarla)
+
+Caja Etiquetas (pequeña) para pegar algo tipo [TC-TORAX] [CON CONTRASTE].
+
+Caja Hallazgos (grande) para pegar texto dictado:
+Derrame pleural izquierdo. Quistes hepáticos. Valida frases normales.
+
+Checkbox “Forzar ‘valida frases normales’”.
+
+Botón Generar informe → abre Modal con el informe final (Título, Técnica, Hallazgos).
+
+5) Qué cambiar (diseño) – TODOs
+5.1 Layout “popup compacto”
+
+Contenedor central max-width ~560–680px, spacing generoso (16–24px), bordes redondeados (12–16px), sombra suave.
+
+Fondo app: muy claro (#f7f7f8) o blanco; tarjetas con sombra leve.
+
+Tipografía del sistema (ya está) pero sube el line-height; usa jerarquía de tamaños (24/18/14px).
+
+Quita apariencia “grid” 2 columnas si estorba; el objetivo es una sola columna, orientada a:
+
+Etiquetas (breve)
+
+Hallazgos (textarea grande)
+
+Botón
+
+Debug/contadores (pequeño)
+
+Puedes reordenar el JSX de App.tsx solo en lo visual (divs, clases, wrappers), sin cambiar la lógica de eventos/estados.
+
+5.2 Inputs
+
+Etiquetas: textarea de altura pequeña (3–4 líneas), label claro y ejemplo tenue.
+
+Hallazgos: textarea principal (10–14 líneas), con borde sutil, focus visible, esquinas redondeadas, padding amplio.
+
+Checkbox con etiqueta a la derecha, alineado y con cursor-pointer.
+
+5.3 Botón principal
+
+Botón dark o “accent” (negro o azul/gris oscuro), alto 40–44px, bold; hover con elevación ligera.
+
+“Generar informe” centrado y con icono opcional (no es obligatorio).
+
+5.4 Modal del informe
+
+Centrado, max-width ~720–840px, altura scrollable (p. ej. 70vh), fondo blanco, sombra suave tipo “elevation 3–4”.
+
+Cabecera del modal con título “Informe” y botón de cierre (X) arriba a la derecha.
+
+Contenido en monoespaciado opcional o fuente regular con espaciado de párrafos; borde gris muy suave alrededor del textarea de salida.
+
+Botones en el footer del modal (opcionales si quieres dejarlos preparados): Copiar, Cerrar.
+
+Si añades “Copiar”, usa navigator.clipboard.writeText(report) (opcional; no es requisito).
+
+El componente src/components/Modal.tsx ya existe; puedes reestilizarlo (clases, inline styles → classes). Si prefieres, añade un wrapper para backdrop/centered card, pero no cambies su API (props).
+
+5.5 Tema “On Call Helper”
+
+Minimal, fondos limpios, contraste alto en textos, controles redondeados, sombras muy discretas, hover y focus states cuidadas.
+
+Paleta sobria (grises + negro/acento), sin estridencias.
+
+6) No romper (muy importante)
+
+No modificar:
+
+Carga/estructura de *.json en src/data/.
+
+Llamadas y orden de la lógica en App.tsx (sobre todo handleGenerate y el uso de applyPostprocessNorms).
+
+Nombres de funciones o exports en utils/postprocess.ts ni prompts/templates.ts.
+
+No introducir dependencias nuevas de estado/lógica; solo clases/estilos/markup ligero.
+
+7) Aceptación visual (criterios)
+
+La app se ve y se siente como un popup: compacta, clara, con foco en un textarea grande y un botón.
+
+Al pulsar “Generar informe”, se abre modal con contenido legible y cómodo de copiar.
+
+Sin desplazamientos laterales; responsive (móvil/tablet/desktop) manteniendo el “popup feel”.
+
+No hay cambios funcionales ni regresiones en la generación del informe.
+
+8) Referencias útiles para probar
+
+Etiquetas de ejemplo:
+[TC-TORAX] [CON CONTRASTE]
+[TC-ABDOMEN] [SIN CONTRASTE]
+
+Dictado de ejemplo:
+Derrame pleural izquierdo. Quistes hepáticos. Valida frases normales.
+
+9) Futuro (contexto, no lo hagas ahora)
+
+Luego migraremos esta SPA a Electron. No hace falta preparar nada especial aquí; solo mantener la SPA limpia.
+
+El empaquetado lo haremos con electron-builder. Diseño debe permanecer agnóstico a entorno.
+
+Resumen corto para el diseñador/a
+
+Mantén todo igual de funcional.
+
+Haz que parezca un popup: una sola columna, textarea (dictado) grande, botón grande, modal elegante con informe.
+
+Estética tipo On Call Helper: minimal, limpio, sombras suaves.
+
+No toques lógica ni datos; solo estilos y estructura visual.
