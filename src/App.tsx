@@ -20,7 +20,7 @@ import {
 } from './prompts/templates';
 
 // Postproceso (aplica normas 1–11 + agregaciones finales)
-import { applyPostprocessNorms } from './utils/postprocess';
+import { applyPostprocessNorms } from './config/postprocess';
 
 // Literales
 import { DEFAULT_CLOSING_TEXT } from './config/constants';
