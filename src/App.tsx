@@ -294,8 +294,10 @@ export default function App() {
 
       const maps = buildMapsForLLM(findingsJson as FindingEntry[], fuzzyLexicon as FuzzyEntry[]);
 
-      // Llamada al backend  
-      const response = await fetch('/api/plan', {
+      // Llamada al backend - usar puerto directo en desarrollo  
+      const isDev = window.location.hostname === 'localhost';
+      const apiUrl = isDev ? 'http://localhost:3001/api/plan' : '/api/plan';
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

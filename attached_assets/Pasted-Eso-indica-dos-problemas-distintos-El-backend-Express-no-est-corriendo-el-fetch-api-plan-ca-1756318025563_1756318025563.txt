@@ -1,3 +1,64 @@
+Eso indica dos problemas distintos:
+
+El backend Express no está corriendo → el fetch('/api/plan') cae al proxy de Vite y devuelve 404.
+
+El HMR de Vite no puede abrir el WebSocket en Replit (típico si no se fija hmr.clientPort a 443).
+
+Te dejo el fix completo y listo para pegar.
+
+1) Asegura dependencias y scripts
+
+Instala lo que falta en Replit (shell):
+
+npm i -D tsx concurrently
+
+
+Tu package.json (bloque scripts) debe quedar así:
+
+{
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "tsx server/index.ts",
+    "dev:all": "concurrently -k \"npm:dev\" \"npm:dev:server\"",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  }
+}
+
+
+Y en la pestaña Run de Replit, ejecuta npm run dev:all (no npm run dev).
+
+2) Vite con HMR para Replit + proxy estable
+
+Reemplaza por completo tu vite.config.ts por esto:
+
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    host: true,
+    // Replit expone dominios *.replit.dev y *.repl.co
+    allowedHosts: [".replit.dev", ".repl.co"],
+    // HMR necesita puerto 443 en Replit para WS externos
+    hmr: {
+      clientPort: 443
+      // (Vite autodetecta wss cuando estás sirviendo por https en Replit)
+    },
+    proxy: {
+      // El backend local Express escucha en 3001 (ver index.ts abajo)
+      "/api": { target: "http://127.0.0.1:3001", changeOrigin: true }
+    }
+  }
+});
+
+3) Backend Express fijo en 3001 en dev
+
+Crea/actualiza server/index.ts con este contenido (completo):
+
 // server/index.ts
 import express from "express";
 import cors from "cors";
@@ -103,3 +164,32 @@ const PORT = isDev ? 3001 : Number(process.env.PORT || 3001);
 app.listen(PORT, () => {
   console.log(`[server] listening on http://localhost:${PORT}`);
 });
+
+
+Importante: en Replit, Vite y Express corren en el mismo contenedor. Por eso el proxy apunta a 127.0.0.1:3001. Si Express no está arrancado, Vite proxy devuelve 404: arreglado lanzando npm run dev:all.
+
+4) Verificación
+
+Abre una pestaña del repl con /api/health (por ejemplo https://<lo-que-sea>.replit.dev/api/health).
+Debe responder {"ok":true}.
+
+Recarga el preview: el HMR puede seguir “gris” unos segundos, pero no debe bloquear la app.
+Si molesta el overlay, puedes apagarlo con:
+
+// vite.config.ts
+server: {
+  // ...
+  hmr: { clientPort: 443, overlay: false },
+  // ...
+}
+
+
+Pulsa Generar informe → el 404 desaparece.
+
+Por qué pasaba
+
+404: Vite proxy iba a http://localhost:3001/api/... pero Express no estaba escuchando ahí (o ni siquiera estaba corriendo).
+
+WebSocket HMR: Replit expone tráfico por 443, y Vite necesita hmr.clientPort = 443 para abrir WS correctamente detrás del dominio *.replit.dev.
+
+Con estos tres archivos ajustados (package.json scripts, vite.config.ts, server/index.ts) y arrancando npm run dev:all, queda estable.
