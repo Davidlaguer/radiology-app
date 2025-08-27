@@ -59,7 +59,9 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 /* Popup de dictado */
@@ -71,6 +73,15 @@ body {
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   border: 1px solid var(--border-light);
+  position: relative;
+  transition: transform 0.1s ease;
+  user-select: none;
+}
+
+.dictation-popup.dragging {
+  cursor: move;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  transform-origin: center;
 }
 
 /* Header del popup */
@@ -83,6 +94,8 @@ body {
   background: var(--bg-tertiary);
   border-bottom: 1px solid var(--border-color);
   position: relative;
+  cursor: move;
+  -webkit-app-region: drag;
 }
 
 .popup-header .popup-icon {
@@ -122,6 +135,7 @@ body {
   transition: all 0.2s ease;
   font-size: 18px;
   color: var(--text-primary);
+  -webkit-app-region: no-drag;
 }
 
 .theme-toggle:hover {
@@ -134,6 +148,7 @@ body {
 /* Contenido del popup */
 .popup-content {
   padding: 32px;
+  -webkit-app-region: no-drag;
 }
 
 .dictation-textarea {
