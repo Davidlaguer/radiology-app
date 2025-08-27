@@ -1,43 +1,20 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import React, { useState } from "react";
+import { Card, CardContent } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Textarea } from "../components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
+import { useToast } from "../hooks/use-toast";
 import { Copy, X } from "lucide-react";
-
-interface GenerateReportResponse {
-  report: string;
-}
+import { generateMedicalReport } from "../lib/reportGenerator";
 
 export default function Home() {
   const [dictation, setDictation] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [generatedReport, setGeneratedReport] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
-  const generateReportMutation = useMutation({
-    mutationFn: async (dictation: string): Promise<GenerateReportResponse> => {
-      const response = await apiRequest("POST", "/api/generate-report", { dictation });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setGeneratedReport(data.report);
-      setIsModalOpen(true);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "No se pudo generar el informe. Por favor, inténtelo de nuevo.",
-        variant: "destructive",
-      });
-      console.error("Error generating report:", error);
-    },
-  });
-
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
     if (!dictation.trim()) {
@@ -49,7 +26,25 @@ export default function Home() {
       return;
     }
 
-    generateReportMutation.mutate(dictation.trim());
+    setIsGenerating(true);
+    
+    try {
+      // Simular un pequeño delay para mejor UX
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const report = generateMedicalReport(dictation.trim());
+      setGeneratedReport(report);
+      setIsModalOpen(true);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo generar el informe. Por favor, inténtelo de nuevo.",
+        variant: "destructive",
+      });
+      console.error("Error generating report:", error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleCopyReport = async () => {
@@ -113,10 +108,10 @@ export default function Home() {
                 <Button
                   type="submit"
                   data-testid="button-generate"
-                  disabled={generateReportMutation.isPending}
+                  disabled={isGenerating}
                   className="w-full bg-primary text-primary-foreground font-semibold py-3 px-6 rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-all duration-200 shadow-sm"
                 >
-                  {generateReportMutation.isPending ? "Generando..." : "Generar Informe"}
+                  {isGenerating ? "Generando..." : "Generar Informe"}
                 </Button>
               </form>
             </CardContent>

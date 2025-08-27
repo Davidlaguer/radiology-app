@@ -1,9 +1,7 @@
-run: NODE_ENV=development tsx server/index.ts
-entrypoint: src/main.ts
+run: npm run dev
 
 env:
   NODE_ENV: development
-  PORT: "5173"
 
 ports:
   - port: 5173
