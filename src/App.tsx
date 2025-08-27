@@ -230,6 +230,7 @@ export default function App() {
   const [dictationRaw, setDictationRaw] = useState<string>('');
   const [report, setReport] = useState<string>('');
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
 
   // Índices (memo)
   const findingCatalog = useMemo(() => buildFindingCatalog(findingsJson as FindingEntry[]), []);
@@ -430,12 +431,19 @@ export default function App() {
   }
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${darkMode ? 'dark' : ''}`}>
 
       <div className="dictation-popup">
         <div className="popup-header">
           <div className="popup-icon">📋</div>
           <h1 className="popup-title">GENERADOR DE INFORMES TC</h1>
+          <button 
+            className="theme-toggle"
+            onClick={() => setDarkMode(!darkMode)}
+            aria-label="Toggle theme"
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
         </div>
 
         <div className="popup-content">
