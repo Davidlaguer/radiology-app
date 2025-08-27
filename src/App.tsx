@@ -25,6 +25,9 @@ import { applyPostprocessNorms } from './utils/postprocess';
 // Literales
 import { DEFAULT_CLOSING_TEXT } from './config/constants';
 
+// Modal component
+import Modal from './components/Modal';
+
 // =========================
 // Tipos locales
 // =========================
@@ -223,6 +226,7 @@ export default function App() {
   // Un único cuadro de texto para **todo** el dictado
   const [dictationRaw, setDictationRaw] = useState<string>('');
   const [report, setReport] = useState<string>('');
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   // Índices (memo)
   const findingCatalog = useMemo(() => buildFindingCatalog(findingsJson as FindingEntry[]), []);
@@ -250,6 +254,7 @@ export default function App() {
     // 0) Validaciones mínimas
     if (!firstLine.trim()) {
       setReport('⚠️ La primera frase debe indicar el tipo de TC (por ejemplo: "TC de tórax con contraste").');
+      setShowModal(true);
       return;
     }
 
@@ -382,66 +387,54 @@ export default function App() {
       `${body}`;
 
     setReport(finalText);
+    setShowModal(true);
   }
 
   return (
-    <div
-      className="app"
-      style={{
-        maxWidth: 760,
-        margin: '36px auto',
-        padding: '0 16px',
-        fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial',
-      }}
-    >
-      <h1 style={{ fontSize: 22, fontWeight: 700, margin: '0 0 16px' }}>
-        Generador de informes TC
-      </h1>
+    <div className="app-container">
+      <div className="app-header">
+        <div className="app-icon">📋</div>
+        <h1 className="app-title">GENERADOR DE INFORMES TC</h1>
+      </div>
 
-      <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Dictado completo</label>
-      <textarea
-        placeholder={
-          '1ª frase = tipo de TC (p. ej.: "TC de tórax con contraste").\n' +
-          'Luego los hallazgos, separados por punto.\n' +
-          'Si terminas con "Valida frases normales.", se aplicará la validación final.'
-        }
-        value={dictationRaw}
-        onChange={e => setDictationRaw(e.target.value)}
-        rows={8}
-        style={{ width: '100%', marginBottom: 12 }}
-      />
-
-      <button
-        onClick={handleGenerate}
-        style={{
-          padding: '10px 16px',
-          border: '1px solid #ccc',
-          borderRadius: 8,
-          cursor: 'pointer',
-          background: '#111',
-          color: '#fff',
-          fontWeight: 600,
-        }}
-      >
-        Generar informe
-      </button>
-
-      <div style={{ marginTop: 20 }}>
-        <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Informe final</label>
+      <div className="dictation-section">
         <textarea
+          className="dictation-textarea"
+          placeholder="Inserta aquí tu dictado"
+          value={dictationRaw}
+          onChange={e => setDictationRaw(e.target.value)}
+          rows={12}
+        />
+        
+        <button
+          className="generate-button"
+          onClick={handleGenerate}
+        >
+          Generar informe
+        </button>
+      </div>
+
+      <Modal 
+        open={showModal} 
+        onClose={() => setShowModal(false)}
+        title="Informe TC generado"
+        width={800}
+        footer={
+          <button 
+            className="btn-secondary" 
+            onClick={() => setShowModal(false)}
+          >
+            Cerrar
+          </button>
+        }
+      >
+        <textarea
+          className="report-textarea"
           readOnly
           value={report}
-          rows={18}
-          style={{ width: '100%' }}
+          rows={25}
         />
-      </div>
-
-      {/* Info mínima para debug (no UI extra) */}
-      <div style={{ marginTop: 12, fontSize: 12, color: '#888' }}>
-        <div>Regiones detectadas: {regions.join(', ') || '—'}</div>
-        <div>Contraste detectado: {contrast || '—'}</div>
-        <div>Presets: {Array.isArray(presets) ? presets.length : 0} · Normales: {Array.isArray(normalPhrases) ? normalPhrases.length : 0} · Hallazgos: {Array.isArray(findingsJson) ? findingsJson.length : 0} · Fuzzy: {Array.isArray(fuzzyLexicon) ? fuzzyLexicon.length : 0}</div>
-      </div>
+      </Modal>
     </div>
   );
 }
