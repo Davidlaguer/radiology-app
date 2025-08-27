@@ -1,10 +1,18 @@
+¡Perfecto! Te dejo un utils/postprocess.ts entero listo para pegar que refuerza las normas clave (3, 4, 8), agrupa por secciones anatómicas reales en template mode, elimina contradicciones típicas (nódulos/adenopatías/colelitiasis/litiasis renal vs frases normales), deduplica el cierre y normaliza el texto.
+
+Además, al final te dejo un set de dictados de prueba para que los pegues tal cual en Replit y veas el antes/después.
+
+Importa así en tu App.tsx:
+import { applyPostprocessNorms } from "./utils/postprocess";
+
+utils/postprocess.ts (reemplaza el archivo entero)
 // src/utils/postprocess.ts
 
 /**
  * Postproceso de líneas para el informe:
  * - Elimina contradicciones (Norma 3) típicas: nódulo pulmonar, adenopatías, colelitiasis, litiasis renal…
- * - Modificación parcial de normales (Norma 8) para hallazgos benignos en hígado ("otras lesiones…").
- * - Deduplica y garantiza "Sin otros hallazgos." al final.
+ * - Modificación parcial de normales (Norma 8) para hallazgos benignos en hígado (“otras lesiones…”).
+ * - Deduplica y garantiza “Sin otros hallazgos.” al final.
  * - Modo plantilla: reagrupa por secciones en orden anatómico estable.
  */
 
@@ -94,7 +102,7 @@ const CONTRADICTION_RULES: Array<{
     trigger: /\bderrame (pleural)?\b/i,
     dropNormals: [/espacios pleurales libres/i],
   },
-  // Bocio / Patología tiroidea => quita normal si la hubiera (si tienes una línea de "tiroides normal")
+  // Bocio / Patología tiroidea => quita normal si la hubiera (si tienes una línea de “tiroides normal”)
   {
     trigger: /\bbocio\b|\bpatolog[ií]a tiroidea\b|\bn[oó]dulo tiroideo\b/i,
     dropNormals: [
@@ -106,7 +114,7 @@ const CONTRADICTION_RULES: Array<{
 
 // -------------------------------
 // Modificaciones parciales (Norma 8)
-// Si hay quistes/hemangiomas hepáticos → "No se observan otras lesiones focales hepáticas."
+// Si hay quistes/hemangiomas hepáticos → “No se observan otras lesiones focales hepáticas.”
 // -------------------------------
 const HEPATIC_BENIGN_TRIGGERS = /\b(hemangioma(s)?|quiste(s)? hep[aá]tico(s)?)\b/i;
 const HEPATIC_FOCAL_NEGATIVE = /no se observan lesiones focales hep[aá]ticas/i;
