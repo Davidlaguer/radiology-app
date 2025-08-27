@@ -88,39 +88,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // New structured LLM planning endpoint
-  app.post("/api/llm-plan", async (req, res) => {
+  // Planning endpoint with proper structure
+  app.post("/api/plan", async (req, res) => {
     try {
       const {
-        dictadoItems,          // string[]
-        baseNormals,           // string[]
-        maps,                  // { pathologicalMap, additionalMap, fuzzyMap }
-        templateMode           // boolean
+        dictadoItems = [],
+        pathologicalMap = {},
+        additionalMap = {},
+        fuzzyMap = {},
+        templateMode = false
       } = req.body || {};
 
-      if (!Array.isArray(dictadoItems) || !Array.isArray(baseNormals) || !maps) {
+      if (!Array.isArray(dictadoItems)) {
         return res.status(400).json({ error: 'Payload inválido.' });
       }
 
-      // For now, simulate LLM processing - TODO: Replace with real OpenAI Responses
-      const plan = {
-        replaces: [],
-        adds: [],
-        loose: [...dictadoItems], // For now, everything goes to loose
-        notes: ['Procesamiento simulado - pendiente integración OpenAI Responses']
+      // Normalización simple
+      const norm = (s: string) =>
+        (s || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/\p{Diacritic}/gu, "")
+          .replace(/[^\p{L}\p{N}\s]/gu, "")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      const ensureDot = (s: string) => {
+        const t = (s || "").trim();
+        if (!t) return t;
+        return /[.:]$/.test(t) ? t : `${t}.`;
       };
 
-      console.log('LLM Plan request:', { 
-        dictadoItems, 
-        baseNormals: baseNormals.length, 
+      // Índices directos
+      const patKeys = new Map<string, string>();
+      for (const [k, v] of Object.entries(pathologicalMap)) {
+        patKeys.set(norm(String(k)), String(v));
+      }
+      const addKeys = new Map<string, string>();
+      for (const [k, v] of Object.entries(additionalMap)) {
+        addKeys.set(norm(String(k)), String(v));
+      }
+      const fuzzy = new Map<string, string>();
+      for (const [k, v] of Object.entries(fuzzyMap)) {
+        fuzzy.set(norm(String(k)), String(v));
+      }
+
+      const replaces: Array<{ targetNormal: string; newLine: string }> = [];
+      const adds: Array<{ afterNormal: string; newLine: string }> = [];
+      const loose: string[] = [];
+
+      for (const raw of dictadoItems) {
+        const n = norm(String(raw));
+        if (!n) continue;
+        if (n.includes("valida frases normales")) continue;
+
+        let matchedKind: "pat" | "add" | null = null;
+        let matchedNormal: string | null = null;
+        let finalText: string | null = null;
+
+        if (patKeys.has(n)) {
+          matchedKind = "pat";
+          matchedNormal = patKeys.get(n)!;
+          finalText = String(raw);
+        } else if (addKeys.has(n)) {
+          matchedKind = "add";
+          matchedNormal = addKeys.get(n)!;
+          finalText = String(raw);
+        } else {
+          const maybeOficial = fuzzy.get(n);
+          if (maybeOficial) {
+            const oficialN = norm(maybeOficial);
+            if (patKeys.has(oficialN)) {
+              matchedKind = "pat";
+              matchedNormal = patKeys.get(oficialN)!;
+              finalText = maybeOficial;
+            } else if (addKeys.has(oficialN)) {
+              matchedKind = "add";
+              matchedNormal = addKeys.get(oficialN)!;
+              finalText = maybeOficial;
+            }
+          }
+        }
+
+        if (matchedKind === "pat" && matchedNormal && finalText) {
+          replaces.push({ targetNormal: matchedNormal, newLine: ensureDot(finalText) });
+        } else if (matchedKind === "add" && matchedNormal && finalText) {
+          adds.push({ afterNormal: matchedNormal, newLine: ensureDot(finalText) });
+        } else {
+          loose.push(ensureDot(String(raw)));
+        }
+      }
+
+      console.log('Plan request:', { 
+        dictadoItems: dictadoItems.length, 
         templateMode,
-        mapsKeys: Object.keys(maps)
+        replaces: replaces.length,
+        adds: adds.length,
+        loose: loose.length
       });
       
-      return res.json(plan);
+      return res.json({ ok: true, plan: { replaces, adds, loose } });
     } catch (err: any) {
-      console.error('LLM error:', err?.message || err);
-      return res.status(500).json({ error: 'LLM failure' });
+      console.error('Plan error:', err?.message || err);
+      return res.status(500).json({ error: 'Plan failure' });
     }
   });
 

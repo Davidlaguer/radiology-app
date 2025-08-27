@@ -45,12 +45,6 @@ type FuzzyEntry = {
   excluir?: string[];
 };
 
-type LlmPlan = {
-  replaces: Array<{ fraseNormal: string; texto: string }>;
-  adds: Array<{ fraseNormal: string; textos: string[] }>;
-  loose: string[];
-  notes?: string[];
-};
 
 // =========================
 // Utilidades internas
@@ -68,11 +62,6 @@ function normalize(s: string) {
     .trim();
 }
 
-function ensureDot(s: string) {
-  const t = s.trim();
-  if (!t) return t;
-  return /[.:]$/.test(t) ? t : `${t}.`;
-}
 
 // =========================
 // Mapeos reducidos para LLM
@@ -305,14 +294,18 @@ export default function App() {
 
       const maps = buildMapsForLLM(findingsJson as FindingEntry[], fuzzyLexicon as FuzzyEntry[]);
 
-      // Llamada al backend LLM
-      const response = await fetch('/api/llm-plan', {
+      // Llamada al backend  
+      const response = await fetch('/api/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dictadoItems: filtered,
+          regions,
+          contrast,
           baseNormals,
-          maps,
+          pathologicalMap: maps.pathologicalMap,
+          additionalMap: maps.additionalMap,
+          fuzzyMap: maps.fuzzyMap,
           templateMode
         })
       });
@@ -321,7 +314,12 @@ export default function App() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const plan: LlmPlan = await response.json();
+      const result = await response.json();
+      if (!result.ok) {
+        throw new Error('Server error');
+      }
+
+      const plan = result.plan;
 
       // Aplicar plan sobre baseNormals
       let working = [...baseNormals];
@@ -329,16 +327,16 @@ export default function App() {
       // REEMPLAZOS
       const repMap = new Map<string, string>();
       for (const r of plan.replaces || []) {
-        repMap.set(r.fraseNormal, ensureDot(r.texto));
+        repMap.set(r.targetNormal, r.newLine);
       }
       working = working.map(line => repMap.get(line) || line);
 
       // AÑADIDOS
       const addMap = new Map<string, string[]>();
       for (const a of plan.adds || []) {
-        const list = addMap.get(a.fraseNormal) || [];
-        list.push(...a.textos.map(ensureDot));
-        addMap.set(a.fraseNormal, list);
+        const list = addMap.get(a.afterNormal) || [];
+        list.push(a.newLine);
+        addMap.set(a.afterNormal, list);
       }
       working = working.flatMap(line => {
         const adds = addMap.get(line) || [];
@@ -347,7 +345,7 @@ export default function App() {
       });
 
       // SUELTOS
-      const loose = (plan.loose || []).map(ensureDot);
+      const loose = plan.loose || [];
       const closing = (DEFAULT_CLOSING_TEXT || 'Sin otros hallazgos.').trim();
       const hasClosing = working.some(l => normalize(l) === normalize(closing));
       if (!hasClosing) working.push(closing);

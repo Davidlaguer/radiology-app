@@ -1,0 +1,221 @@
+1) Añade el servidor (Express) — server/index.ts
+
+Crea el archivo server/index.ts:
+
+// server/index.ts
+import express from "express";
+import cors from "cors";
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Salud
+app.get("/api/health", (_req, res) => {
+  res.json({ ok: true });
+});
+
+// Planificador híbrido (mínimo viable)
+// Si quieres, luego metemos aquí tu lógica LLM con OpenAI Responses.
+app.post("/api/plan", (req, res) => {
+  // Estructura esperada desde el frontend:
+  // {
+  //   dictadoItems: string[],
+  //   regions: string[],
+  //   contrast: string | null,
+  //   baseNormals: string[],
+  //   pathologicalMap: Record<string, string>, // hallazgo_oficial -> frase_normal
+  //   additionalMap: Record<string, string>,   // hallazgo_oficial -> frase_normal
+  //   fuzzyMap: Record<string, string>        // sinonimo -> hallazgo_oficial
+  // }
+  const body = req.body || {};
+  const {
+    dictadoItems = [],
+    // regions, contrast, baseNormals,
+    pathologicalMap = {},
+    additionalMap = {},
+    fuzzyMap = {},
+  } = body;
+
+  // Normalización simple
+  const norm = (s: string) =>
+    (s || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^\p{L}\p{N}\s]/gu, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const ensureDot = (s: string) => {
+    const t = (s || "").trim();
+    if (!t) return t;
+    return /[.:]$/.test(t) ? t : `${t}.`;
+  };
+
+  // Índices directos
+  const patKeys = new Map<string, string>(); // normalized(hallazgo_oficial) -> frase_normal
+  for (const [k, v] of Object.entries(pathologicalMap)) {
+    patKeys.set(norm(k), v);
+  }
+  const addKeys = new Map<string, string>(); // normalized(hallazgo_oficial) -> frase_normal
+  for (const [k, v] of Object.entries(additionalMap)) {
+    addKeys.set(norm(k), v);
+  }
+  const fuzzy = new Map<string, string>(); // normalized(sinonimo) -> hallazgo_oficial (texto original)
+  for (const [k, v] of Object.entries(fuzzyMap)) {
+    fuzzy.set(norm(k), v);
+  }
+
+  type PlanReplace = { targetNormal: string; newLine: string };
+  type PlanAdd = { afterNormal: string; newLine: string };
+
+  const replaces: PlanReplace[] = [];
+  const adds: PlanAdd[] = [];
+  const loose: string[] = [];
+
+  for (const raw of dictadoItems) {
+    const n = norm(raw);
+    if (!n) continue;
+    if (n.includes("valida frases normales")) continue; // activador no es hallazgo
+
+    // 1) ¿coincidencia exacta como hallazgo_oficial?
+    let matchedKind: "pat" | "add" | null = null;
+    let matchedNormal: string | null = null;
+    let finalText: string | null = null;
+
+    if (patKeys.has(n)) {
+      matchedKind = "pat";
+      matchedNormal = patKeys.get(n)!;
+      finalText = raw;
+    } else if (addKeys.has(n)) {
+      matchedKind = "add";
+      matchedNormal = addKeys.get(n)!;
+      finalText = raw;
+    } else {
+      // 2) fuzzy: sinónimo -> hallazgo_oficial -> mapa
+      const maybeOficial = fuzzy.get(n);
+      if (maybeOficial) {
+        const oficialN = norm(maybeOficial);
+        if (patKeys.has(oficialN)) {
+          matchedKind = "pat";
+          matchedNormal = patKeys.get(oficialN)!;
+          finalText = maybeOficial; // usa el oficial
+        } else if (addKeys.has(oficialN)) {
+          matchedKind = "add";
+          matchedNormal = addKeys.get(oficialN)!;
+          finalText = maybeOficial; // usa el oficial
+        }
+      }
+    }
+
+    if (matchedKind === "pat" && matchedNormal && finalText) {
+      replaces.push({ targetNormal: matchedNormal, newLine: ensureDot(finalText) });
+    } else if (matchedKind === "add" && matchedNormal && finalText) {
+      adds.push({ afterNormal: matchedNormal, newLine: ensureDot(finalText) });
+    } else {
+      // 3) sin mapeo → al final
+      loose.push(ensureDot(raw));
+    }
+  }
+
+  res.json({ ok: true, plan: { replaces, adds, loose } });
+});
+
+const PORT = Number(process.env.PORT) || 3001;
+app.listen(PORT, () => {
+  console.log(`[server] listening on http://localhost:${PORT}`);
+});
+
+
+Esto garantiza que /api/plan exista (y deje de salir 404). Más adelante puedes sofisticar la ruta para invocar OpenAI si lo deseas.
+
+2) Proxy de Vite y host permitido — vite.config.ts
+
+Asegúrate de tener allowedHosts (para Replit) y el proxy al puerto del server. Actualiza tu vite.config.ts completo así:
+
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    host: true, // escuchar en 0.0.0.0 (Replit)
+    allowedHosts: [
+      // añade aquí los hosts que te mostró Replit en el error
+      // o deja comodín si tu Repl rota el subdominio
+      ".replit.dev",
+      ".repl.co",
+    ],
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+      },
+    },
+  },
+});
+
+3) Scripts para levantar ambos (Vite + server) — package.json
+
+Añade scripts para correr el servidor en paralelo con Vite. Te paso el package.json completo (reemplaza el tuyo):
+
+{
+  "name": "radiology-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "tsx server/index.ts",
+    "dev:all": "concurrently -k \"npm:dev\" \"npm:dev:server\"",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.7.4",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "tsx": "^4.19.1",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.2"
+  }
+}
+
+
+En Replit (o local) lanza npm run dev:all para arrancar Vite y el servidor a la vez. El frontend seguirá llamando a /api/... y Vite lo proxyará a http://localhost:3001.
+
+Comprobaciones rápidas
+
+Servidor OK
+Abre en el navegador:
+https://TU-URL-DE-REPLIT/ api/health
+(o en local http://localhost:5173/api/health).
+Deberías ver: {"ok":true}.
+
+Generar informe
+Vuelve a dar al botón. Ya no debe aparecer el 404.
+
+Si aún te fallara
+
+Asegúrate de que App.tsx hace fetch('/api/plan') (o usando API_BASE = '/api').
+
+Si Replit te muestra “host no permitido”, mantén el allowedHosts del vite.config.ts con los dominios que veas en el mensaje.
+
+En “Run” de Replit, pon el comando: npm run dev:all

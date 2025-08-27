@@ -1,71 +1,109 @@
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+// server/index.ts
+import express from "express";
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
-    }
-  });
-
-  next();
+// Salud
+app.get("/api/health", (_req, res) => {
+  res.json({ ok: true });
 });
 
-(async () => {
-  const server = await registerRoutes(app);
+// Planificador híbrido (mínimo viable)
+app.post("/api/plan", (req, res) => {
+  const body = req.body || {};
+  const {
+    dictadoItems = [],
+    pathologicalMap = {},
+    additionalMap = {},
+    fuzzyMap = {},
+  } = body;
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+  // Normalización simple
+  const norm = (s: string) =>
+    (s || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .replace(/[^\p{L}\p{N}\s]/gu, "")
+      .replace(/\s+/g, " ")
+      .trim();
 
-    res.status(status).json({ message });
-    throw err;
-  });
+  const ensureDot = (s: string) => {
+    const t = (s || "").trim();
+    if (!t) return t;
+    return /[.:]$/.test(t) ? t : `${t}.`;
+  };
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
+  // Índices directos
+  const patKeys = new Map<string, string>();
+  for (const [k, v] of Object.entries(pathologicalMap)) {
+    patKeys.set(norm(String(k)), String(v));
+  }
+  const addKeys = new Map<string, string>();
+  for (const [k, v] of Object.entries(additionalMap)) {
+    addKeys.set(norm(String(k)), String(v));
+  }
+  const fuzzy = new Map<string, string>();
+  for (const [k, v] of Object.entries(fuzzyMap)) {
+    fuzzy.set(norm(String(k)), String(v));
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5173 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5173', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
-})();
+  type PlanReplace = { targetNormal: string; newLine: string };
+  type PlanAdd = { afterNormal: string; newLine: string };
+
+  const replaces: PlanReplace[] = [];
+  const adds: PlanAdd[] = [];
+  const loose: string[] = [];
+
+  for (const raw of dictadoItems) {
+    const n = norm(raw);
+    if (!n) continue;
+    if (n.includes("valida frases normales")) continue;
+
+    let matchedKind: "pat" | "add" | null = null;
+    let matchedNormal: string | null = null;
+    let finalText: string | null = null;
+
+    if (patKeys.has(n)) {
+      matchedKind = "pat";
+      matchedNormal = patKeys.get(n)!;
+      finalText = raw;
+    } else if (addKeys.has(n)) {
+      matchedKind = "add";
+      matchedNormal = addKeys.get(n)!;
+      finalText = raw;
+    } else {
+      const maybeOficial = fuzzy.get(n);
+      if (maybeOficial) {
+        const oficialN = norm(maybeOficial);
+        if (patKeys.has(oficialN)) {
+          matchedKind = "pat";
+          matchedNormal = patKeys.get(oficialN)!;
+          finalText = maybeOficial;
+        } else if (addKeys.has(oficialN)) {
+          matchedKind = "add";
+          matchedNormal = addKeys.get(oficialN)!;
+          finalText = maybeOficial;
+        }
+      }
+    }
+
+    if (matchedKind === "pat" && matchedNormal && finalText) {
+      replaces.push({ targetNormal: matchedNormal, newLine: ensureDot(finalText) });
+    } else if (matchedKind === "add" && matchedNormal && finalText) {
+      adds.push({ afterNormal: matchedNormal, newLine: ensureDot(finalText) });
+    } else {
+      loose.push(ensureDot(raw));
+    }
+  }
+
+  res.json({ ok: true, plan: { replaces, adds, loose } });
+});
+
+const PORT = Number(process.env.PORT) || 5173;
+app.listen(PORT, () => {
+  console.log(`[server] listening on http://localhost:${PORT}`);
+});
