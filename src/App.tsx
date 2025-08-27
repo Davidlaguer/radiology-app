@@ -1,4 +1,3 @@
-
 // src/App.tsx
 import { useMemo, useState } from 'react';
 
@@ -219,6 +218,115 @@ function splitDictation(raw: string): { firstLine: string; findingsList: string[
   return { firstLine, findingsList };
 }
 
+/**
+ * Llama a la API de OpenAI para clasificar una frase de hallazgo.
+ *
+ * @param inputText - La frase de hallazgo a clasificar.
+ * @param regions - Las regiones anatómicas del estudio.
+ * @param contrast - El tipo de contraste del estudio.
+ * @param findingsCatalog - El catálogo completo de hallazgos conocidos.
+ * @param normalPhrases - La lista de frases normales.
+ * @param fuzzyLexicon - El léxico de sinónimos y erratas.
+ * @returns Una promesa que se resuelve con la clasificación del hallazgo.
+ */
+async function classifyWithOpenAI(
+  inputText: string,
+  regions: RegionTag[],
+  contrast: ContrastTag | null,
+  findingsCatalog: FindingEntry[],
+  normalPhrases: NormalPhrase[],
+  fuzzyLexicon: FuzzyEntry[]
+): Promise<{ class_type: 'patologico' | 'adicional' | 'suelto'; target_frase_normal?: string; input_text: string }> {
+
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  const useOpenAI = import.meta.env.VITE_USE_OPENAI === '1';
+
+  if (!useOpenAI || !apiKey) {
+    // Si no se usa OpenAI, retorna como si fuera un hallazgo suelto
+    return { class_type: 'suelto', input_text: inputText };
+  }
+
+  const prompt = `
+Clasifica la siguiente frase de un informe de TC como 'patologico', 'adicional' o 'suelto'.
+Si es 'patologico' o 'adicional', indica la frase normal más cercana del siguiente catálogo de hallazgos:
+
+Catálogo de Hallazgos Patológicos:
+${findingsCatalog.map(f => `- ${f.hallazgos_patologicos.join(', ')} (Zona: ${f.zona_anatomica}, Frase Normal: ${f.frase_normal})`).join('\n')}
+
+Catálogo de Hallazgos Adicionales:
+${findingsCatalog.map(f => `- ${f.hallazgos_adicionales.join(', ')} (Zona: ${f.zona_anatomica}, Frase Normal: ${f.frase_normal})`).join('\n')}
+
+Léxico Fuzzy (sinónimos/erratas):
+${fuzzyLexicon.map(f => `- ${f.hallazgo_oficial} (Sinónimos: ${f.sinonimos?.join(', ') || 'N/A'}, Erratas: ${f.errores_comunes?.join(', ') || 'N/A'})`).join('\n')}
+
+Frases Normales por Región y Contraste:
+${normalPhrases.filter(np => regionsMatch(np.regions, regions) && contrastMatches(np.contrast, contrast)).map(np => `- ${np.text} (Regiones: ${np.regions.join(', ')}, Contraste: ${np.contrast.join(', ')})`).join('\n')}
+
+Frase a clasificar: "${inputText}"
+
+Formato de respuesta JSON: {"class_type": "...", "target_frase_normal": "..."}
+Si la frase no se corresponde con ningún hallazgo patológico o adicional, responde con {"class_type": "suelto"} y omite "target_frase_normal".
+Responde SÓLO con el JSON.
+`;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2, // Baja temperatura para respuestas más deterministas
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('OpenAI API error:', response.status, response.statusText);
+      return { class_type: 'suelto', input_text: inputText }; // Fallback a suelto en caso de error
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+
+    if (!content) {
+      console.error('OpenAI API returned no content.');
+      return { class_type: 'suelto', input_text: inputText };
+    }
+
+    try {
+      const result = JSON.parse(content);
+      if (result.class_type === 'patologico' || result.class_type === 'adicional') {
+        // Busca la frase normal correspondiente en los datos originales para asegurarte de que es válida
+        const matchingNormalPhrase = normalPhrases.find(
+          np => normalize(np.text) === normalize(result.target_frase_normal) &&
+                 regionsMatch(np.regions, regions) &&
+                 contrastMatches(np.contrast, contrast)
+        );
+
+        if (matchingNormalPhrase) {
+          return { ...result, target_frase_normal: matchingNormalPhrase.text, input_text: inputText };
+        } else {
+          // Si la frase normal encontrada por la IA no coincide con los filtros de región/contraste, tratarla como suelta
+          console.warn(`OpenAI returned a matching normal phrase "${result.target_frase_normal}" which does not match current study criteria. Treating as 'suelto'.`);
+          return { class_type: 'suelto', input_text: inputText };
+        }
+      } else {
+        return { ...result, input_text: inputText };
+      }
+    } catch (e) {
+      console.error('Failed to parse OpenAI response JSON:', e, 'Response content:', content);
+      return { class_type: 'suelto', input_text: inputText }; // Fallback a suelto si el JSON es inválido
+    }
+  } catch (error) {
+    console.error('Error calling OpenAI API:', error);
+    return { class_type: 'suelto', input_text: inputText }; // Fallback a suelto en caso de error de red/fetch
+  }
+}
+
+
 // =========================
 // Componente principal
 // =========================
@@ -250,7 +358,7 @@ export default function App() {
   const technique = useMemo(() => buildTechniqueBlock(regions, contrast), [regions, contrast]);
   const title = useMemo(() => buildReportTitle(regions, contrast), [regions, contrast]);
 
-  function handleGenerate() {
+  async function handleGenerate() {
     // 0) Validaciones mínimas
     if (!firstLine.trim()) {
       setReport('⚠️ La primera frase debe indicar el tipo de TC (por ejemplo: "TC de tórax con contraste").');
@@ -283,39 +391,45 @@ export default function App() {
     for (const item of itemsForMapping) {
       const n = normalize(item);
       if (!n) continue;
+      if (n.includes('valida frases normales')) continue;
 
-      // 2.a) exact match en tablas
       let mf: MappedFinding | null = null;
 
-      if (!mf) {
-        // patológico exacto
-        const hitPat = findingCatalog.pathological.get(n);
-        if (hitPat) mf = { tipo: 'patologico', zona: hitPat.zona, fraseNormal: hitPat.fraseNormal, texto: item };
+      // 1) exact match en tablas
+      const hitPat = findingCatalog.pathological.get(n);
+      if (hitPat) {
+        mf = { tipo: 'patologico', zona: hitPat.zona, fraseNormal: hitPat.fraseNormal, texto: ensureDot(item) };
       }
-      if (!mf) {
-        // adicional exacto
-        const hitAdd = findingCatalog.additional.get(n);
-        if (hitAdd) mf = { tipo: 'adicional', zona: hitAdd.zona, fraseNormal: hitAdd.fraseNormal, texto: item };
+      const hitAdd = findingCatalog.additional.get(n);
+      if (!mf && hitAdd) {
+        mf = { tipo: 'adicional', zona: hitAdd.zona, fraseNormal: hitAdd.fraseNormal, texto: ensureDot(item) };
       }
 
-      // 2.b) fuzzy → mapear a oficial y volver a buscar en catálogo por oficial
+      // 2) fuzzy en fuzzyLexicon
       if (!mf) {
         const fz = fuzzyIndex.get(n);
         if (fz && !(fz.excluir || []).some(ex => normalize(ex) === n)) {
           const oficialN = normalize(fz.oficial);
-          const hitPat = findingCatalog.pathological.get(oficialN);
-          const hitAdd = findingCatalog.additional.get(oficialN);
-          if (hitPat) mf = { tipo: 'patologico', zona: hitPat.zona, fraseNormal: hitPat.fraseNormal, texto: fz.oficial, oficial: fz.oficial };
-          else if (hitAdd) mf = { tipo: 'adicional', zona: hitAdd.zona, fraseNormal: hitAdd.fraseNormal, texto: fz.oficial, oficial: fz.oficial };
+          const hitPat2 = findingCatalog.pathological.get(oficialN);
+          const hitAdd2 = findingCatalog.additional.get(oficialN);
+          if (hitPat2) mf = { tipo: 'patologico', zona: hitPat2.zona, fraseNormal: hitPat2.fraseNormal, texto: ensureDot(fz.oficial) };
+          else if (hitAdd2) mf = { tipo: 'adicional', zona: hitAdd2.zona, fraseNormal: hitAdd2.fraseNormal, texto: ensureDot(fz.oficial) };
         }
       }
 
-      // 2.c) si no encaja en nada, queda como suelto (va antes del cierre)
+      // 3) si sigue suelto → llama a OpenAI
       if (!mf) {
-        mf = { tipo: 'suelto', texto: item };
+        const res = await classifyWithOpenAI(item, regions, contrast, findingsJson as any, normalPhrases as any, fuzzyLexicon as any);
+        if (res.class_type === 'patologico' && res.target_frase_normal) {
+          mf = { tipo: 'patologico', fraseNormal: res.target_frase_normal, texto: ensureDot(res.input_text) };
+        } else if (res.class_type === 'adicional' && res.target_frase_normal) {
+          mf = { tipo: 'adicional', fraseNormal: res.target_frase_normal, texto: ensureDot(res.input_text) };
+        } else {
+          mf = { tipo: 'suelto', texto: ensureDot(res.input_text) };
+        }
       }
 
-      mapped.push(mf);
+      mapped.push(mf as MappedFinding);
     }
 
     // 3) Aplicar reglas de integración:
@@ -400,7 +514,7 @@ export default function App() {
           <div className="popup-icon">📋</div>
           <h1 className="popup-title">GENERADOR DE INFORMES TC</h1>
         </div>
-        
+
         <div className="popup-content">
           <textarea
             className="dictation-textarea"
@@ -409,7 +523,7 @@ export default function App() {
             onChange={e => setDictationRaw(e.target.value)}
             rows={12}
           />
-          
+
           <button
             className="generate-button"
             onClick={handleGenerate}
@@ -419,14 +533,14 @@ export default function App() {
         </div>
       </div>
 
-      <Modal 
-        open={showModal} 
+      <Modal
+        open={showModal}
         onClose={() => setShowModal(false)}
         title="Informe TC generado"
         width={800}
         footer={
-          <button 
-            className="btn-secondary" 
+          <button
+            className="btn-secondary"
             onClick={() => setShowModal(false)}
           >
             Cerrar
