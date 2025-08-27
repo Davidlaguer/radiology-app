@@ -1,0 +1,646 @@
+src/utils/postprocess.ts
+// src/utils/postprocess.ts
+// Postproceso avanzado: aplica las 11 normas oficiales y orden anatómico real (bucket sort).
+
+import { DEFAULT_CLOSING_TEXT } from "../config/constants";
+
+// ======================
+// Tipos
+// ======================
+export interface PostprocessOptions {
+  templateMode?: boolean;
+  literals?: string[]; // frases normales activas (de la plantilla base filtrada)
+}
+
+// ======================
+// Orden anatómico oficial
+// ======================
+const SECTION_ORDER = [
+  "thorax.mediastino",
+  "thorax.arteria_pulmonar",
+  "thorax.parenquima",
+  "pleura",
+  "pared_toracica",
+
+  "hepatobiliar.higado",
+  "hepatobiliar.vasos",
+  "hepatobiliar.via_biliar",
+  "hepatobiliar.vesicula",
+
+  "bazo",
+  "pancreas",
+  "suprarrenales",
+
+  "rinones",
+  "vias_urinarias",
+
+  "adenopatias",
+  "peritoneo",
+  "tubo_digestivo",
+  "vascular",
+  "oseo",
+  "pelvico",
+  "otros",
+
+  "cierre",
+];
+
+// ======================
+// Utilidades internas
+// ======================
+function normalizeLite(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .trim();
+}
+
+// ----------------------
+// Clasificador por sección
+// ----------------------
+function classifyLine(line: string, literals: string[] = []): string {
+  const l = normalizeLite(line);
+
+  // 1) Coincidencia por literales de la plantilla base (más preciso)
+  for (const lit of literals) {
+    const nlit = normalizeLite(lit);
+    if (!nlit) continue;
+    if (l.includes(nlit)) {
+      // Mapeo por ancla semántica (frases normales conocidas)
+      if (/mediastinic/.test(nlit)) return "thorax.mediastino";
+      if (/arteria pulmonar/.test(nlit)) return "thorax.arteria_pulmonar";
+      if (/parenquima pulmonar/.test(nlit)) return "thorax.parenquima";
+      if (/espacios pleurales/.test(nlit)) return "pleura";
+      if (/higado|higado de tamano|hepa/.test(nlit)) return "hepatobiliar.higado";
+      if (/vena porta|suprahepatic|esplenoportal/.test(nlit)) return "hepatobiliar.vasos";
+      if (/via biliar|coledoc/.test(nlit)) return "hepatobiliar.via_biliar";
+      if (/vesicula biliar/.test(nlit)) return "hepatobiliar.vesicula";
+      if (/bazo/.test(nlit)) return "bazo";
+      if (/pancreas|wirsung/.test(nlit)) return "pancreas";
+      if (/suprarrenal/.test(nlit)) return "suprarrenales";
+      if (/rinon/.test(nlit)) return "rinones";
+      if (/via urinaria/.test(nlit)) return "vias_urinarias";
+      if (/adenopati/.test(nlit)) return "adenopatias";
+      if (/peritoneo/.test(nlit)) return "peritoneo";
+      if (/recto|engrosamiento rectal|colitis|diverticul/.test(nlit)) return "tubo_digestivo";
+      if (/degenerativ|fractura/.test(nlit)) return "oseo";
+      if (/prostata|ovario|utero/.test(nlit)) return "pelvico";
+      if (/sin otros hallazgos/.test(nlit)) return "cierre";
+    }
+  }
+
+  // 2) Heurística por keywords (fallback seguro)
+  if (/mediast/.test(l)) return "thorax.mediastino";
+  if (/arteria pulmonar|defecto de replecion|tep/.test(l)) return "thorax.arteria_pulmonar";
+  if (/pulmon|nodul|vidrio|atelectas|enfisem/.test(l)) return "thorax.parenquima";
+  if (/pleur/.test(l)) return "pleura";
+  if (/higado|hepat|hepatico/.test(l)) return "hepatobiliar.higado";
+  if (/porta|suprahepatic|esplenoportal/.test(l)) return "hepatobiliar.vasos";
+  if (/coledoc|biliar/.test(l)) return "hepatobiliar.via_biliar";
+  if (/vesicul|colecist/.test(l)) return "hepatobiliar.vesicula";
+  if (/bazo|esplen/.test(l)) return "bazo";
+  if (/pancreas|wirsung|pancreat/.test(l)) return "pancreas";
+  if (/suprarrenal|adrenal/.test(l)) return "suprarrenales";
+  if (/rinon|renal/.test(l)) return "rinones";
+  if (/ureter|urinari/.test(l)) return "vias_urinarias";
+  if (/adenopat/.test(l)) return "adenopatias";
+  if (/peritoneo|mesenter/.test(l)) return "peritoneo";
+  if (/colon|recto|sigma|diverticul|colitis|proctitis/.test(l)) return "tubo_digestivo";
+  if (/ateromatosis|aorta|vascular/.test(l)) return "vascular";
+  if (/fractura|osteol|degenerativ/.test(l)) return "oseo";
+  if (/prostata|ovario|utero|endometr/.test(l)) return "pelvico";
+  if (/post[-\s]?iq|cambios post|post[-\s]?operatori/.test(l)) return "otros";
+  if (/sin otros hallazgos/.test(l)) return "cierre";
+
+  return "otros";
+}
+
+// ----------------------
+// Normas (6–10) compactas
+// ----------------------
+function mergeRenalPhrases(lines: string[]): string[] {
+  // Si están las 4 frases “Riñón dcho/izdo normal + sin lesiones + sin dilatación”
+  const rightNormal = /riñón derecho.*tamaño y morfolog/i;
+  const leftNormal = /riñón izquierdo.*tamaño y morfolog/i;
+  const rightNoDil = /vía urinaria derecha/i;
+  const leftNoDil = /vía urinaria izquierda/i;
+
+  const hasRight = lines.some((l) => rightNormal.test(l));
+  const hasLeft = lines.some((l) => leftNormal.test(l));
+  const hasRightNoDil = lines.some((l) => rightNoDil.test(l));
+  const hasLeftNoDil = lines.some((l) => leftNoDil.test(l));
+
+  if (hasRight && hasLeft && hasRightNoDil && hasLeftNoDil) {
+    const filtered = lines.filter(
+      (l) =>
+        !rightNormal.test(l) &&
+        !leftNormal.test(l) &&
+        !rightNoDil.test(l) &&
+        !leftNoDil.test(l)
+    );
+    filtered.push(
+      "Riñones de tamaño y morfología normales. No se observan lesiones focales ni dilatación de las vías urinarias."
+    );
+    return filtered;
+  }
+  return lines;
+}
+
+function removeConflicts(lines: string[]): string[] {
+  // Ejemplo: si hay hiperplasia suprarrenal, elimina la línea “suprarrenales normales”
+  const hasHyper = lines.some((l) => /hiperplasia adrenal|hiperplasia suprarrenal/i.test(l));
+  if (!hasHyper) return lines;
+  return lines.filter(
+    (l) =>
+      !/glándulas suprarrenales de tamaño y morfolog/i.test(l)
+  );
+}
+
+function replacePartial(lines: string[]): string[] {
+  return lines.map((l) => {
+    if (
+      /no se observan lesiones focales/i.test(l) &&
+      /(quiste|granuloma|microlitiasis)/i.test(l)
+    ) {
+      return l.replace(
+        /no se observan lesiones focales/i,
+        "No se observan otras lesiones focales"
+      );
+    }
+    return l;
+  });
+}
+
+function deduplicate(lines: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const l of lines) {
+    const key = normalizeLite(l);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(l);
+  }
+  return out;
+}
+
+function filterPulmonary(lines: string[]): string[] {
+  // Si hay patología pulmonar clara, elimina “Parénquima pulmonar sin alteraciones…”
+  const hasPath =
+    /vidrio|atelectas|engrosamiento bronq|linfangitis|neumonitis|nódul|enfisem/i.test(
+      lines.join(" ")
+    );
+  if (!hasPath) return lines;
+  return lines.filter(
+    (l) => !/parénquima pulmonar sin alteraciones/i.test(l)
+  );
+}
+
+// ----------------------
+// enforceTemplateMode → bucket sort por secciones
+// ----------------------
+function enforceTemplateMode(lines: string[], literals: string[] = []): string[] {
+  const buckets: Record<string, string[]> = {};
+  for (const key of SECTION_ORDER) buckets[key] = [];
+
+  for (const line of lines) {
+    const section = classifyLine(line, literals);
+    (buckets[section] ??= []).push(line);
+  }
+
+  const ordered: string[] = [];
+  for (const key of SECTION_ORDER) ordered.push(...buckets[key]);
+
+  return ordered;
+}
+
+// ======================
+// Función principal
+// ======================
+export function applyPostprocessNorms(
+  lines: string[],
+  options: PostprocessOptions = {}
+): string[] {
+  let result = [...lines];
+
+  // Normas 6–10
+  result = mergeRenalPhrases(result);
+  result = removeConflicts(result);
+  result = replacePartial(result);
+  result = deduplicate(result);
+  result = filterPulmonary(result);
+
+  // Norma 11: modo plantilla (agrupación/orden anatómico real)
+  if (options.templateMode) {
+    result = enforceTemplateMode(result, options.literals || []);
+  }
+
+  // Garantizar cierre
+  const closing = (DEFAULT_CLOSING_TEXT || "Sin otros hallazgos.").trim();
+  if (!result.some((l) => normalizeLite(l) === normalizeLite(closing))) {
+    result.push(closing);
+  }
+
+  return result;
+}
+
+src/App.tsx (actualizado para pasar literals = baseLines cuando hay TemplateMode)
+
+Es tu App con el único cambio relevante en la llamada a applyPostprocessNorms: ahora le pasamos literals: baseLines para que el clasificador use tus frases normales reales como anclas.
+
+// src/App.tsx
+import { useMemo, useState } from "react";
+
+// Datos
+import normalPhrases from "./data/normalPhrases.json";
+import findingsJson from "./data/findings.json";
+import fuzzyLexicon from "./data/fuzzyLexicon.json";
+import presets from "./data/presets.json";
+
+// Helpers
+import {
+  buildReportTitle,
+  buildTechniqueBlock,
+  buildHallazgosHeader,
+  getSelectedRegions,
+  getSelectedContrast,
+  type RegionTag,
+  type ContrastTag,
+} from "./prompts/templates";
+
+// Postproceso
+import { applyPostprocessNorms } from "./utils/postprocess";
+import { DEFAULT_CLOSING_TEXT } from "./config/constants";
+
+// =========================
+// Tipos
+// =========================
+type NormalPhrase = {
+  text: string;
+  regions: string[];
+  contrast: string[]; // 'SIEMPRE' | 'CON CONTRASTE' | 'SIN CONTRASTE'
+};
+
+type FindingEntry = {
+  zona_anatomica: string;
+  frase_normal: string;
+  hallazgos_patologicos: string[];
+  hallazgos_adicionales: string[];
+};
+
+type FuzzyEntry = {
+  frase_normal: string;
+  hallazgo_oficial: string;
+  sinonimos?: string[];
+  errores_comunes?: string[];
+  excluir?: string[];
+};
+
+// =========================
+// Utils
+// =========================
+const SENTENCE_SPLIT = /[.]+|\n+/g;
+
+function normalize(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildFindingCatalog(findingTable: FindingEntry[]) {
+  const pathological = new Map<string, { zona: string; fraseNormal: string }>();
+  const additional = new Map<string, { zona: string; fraseNormal: string }>();
+
+  for (const row of findingTable) {
+    const base = { zona: row.zona_anatomica, fraseNormal: row.frase_normal };
+    for (const hp of row.hallazgos_patologicos || []) {
+      pathological.set(normalize(hp), base);
+    }
+    for (const ha of row.hallazgos_adicionales || []) {
+      additional.set(normalize(ha), base);
+    }
+  }
+  return { pathological, additional };
+}
+
+function buildFuzzyIndex(fuzzyTable: FuzzyEntry[]) {
+  const index = new Map<string, { oficial: string; excluir?: string[]; fraseNormal?: string }>();
+  for (const e of fuzzyTable) {
+    const target = e.hallazgo_oficial?.trim();
+    if (!target) continue;
+
+    const pack = { oficial: target, excluir: e.excluir, fraseNormal: e.frase_normal };
+    index.set(normalize(target), pack);
+
+    for (const s of e.sinonimos || []) index.set(normalize(s), pack);
+    for (const err of e.errores_comunes || []) index.set(normalize(err), pack);
+  }
+  return index;
+}
+
+function contrastMatches(needed: string[], studyContrast: ContrastTag | null) {
+  if (needed.includes("SIEMPRE")) return true;
+  if (!studyContrast) return false;
+  return needed.includes(studyContrast);
+}
+
+function regionsMatch(needed: string[], studyRegions: RegionTag[]) {
+  const set = new Set(studyRegions);
+  return needed.some((r) => set.has(r as RegionTag));
+}
+
+function buildBaseTemplate(
+  allNormals: NormalPhrase[],
+  regions: RegionTag[],
+  contrast: ContrastTag | null
+) {
+  const lines: string[] = [];
+  for (const row of allNormals) {
+    const okRegion = regionsMatch(row.regions, regions);
+    const okContrast = contrastMatches(row.contrast, contrast);
+    if (okRegion && okContrast) {
+      lines.push(row.text.trim());
+    }
+  }
+  return lines;
+}
+
+function ensureClosing(lines: string[]) {
+  const closing = (DEFAULT_CLOSING_TEXT || "Sin otros hallazgos.").trim();
+  const has = lines.some((l) => normalize(l) === normalize(closing));
+  return has ? lines : [...lines, closing];
+}
+
+function ensureDot(s: string) {
+  const t = s.trim();
+  if (!t) return t;
+  return /[.:]$/.test(t) ? t : `${t}.`;
+}
+
+// =========================
+// Componente
+// =========================
+export default function App() {
+  const [dictado, setDictado] = useState<string>("");
+  const [report, setReport] = useState<string>("");
+
+  // Derivar etiquetas automáticamente de la PRIMERA frase del dictado
+  const firstLine = useMemo(() => {
+    const parts = (dictado || "").split(SENTENCE_SPLIT).map((x) => x.trim()).filter(Boolean);
+    return parts[0] || "";
+  }, [dictado]);
+
+  const autoLabels = useMemo(() => {
+    const t = normalize(firstLine);
+    const regions: RegionTag[] = [];
+    let contrast: ContrastTag | null = null;
+
+    if (/torax/.test(t)) regions.push("TC-TORAX" as RegionTag);
+    if (/abdomen/.test(t)) regions.push("TC-ABDOMEN" as RegionTag);
+
+    if (/con contraste|c\/ c|c con/.test(t)) contrast = "CON CONTRASTE" as ContrastTag;
+    else if (/sin contraste/.test(t)) contrast = "SIN CONTRASTE" as ContrastTag;
+
+    return { regions, contrast };
+  }, [firstLine]);
+
+  // Indices
+  const findingCatalog = useMemo(() => buildFindingCatalog(findingsJson as FindingEntry[]), []);
+  const fuzzyIndex = useMemo(() => buildFuzzyIndex(fuzzyLexicon as FuzzyEntry[]), []);
+
+  // Título y técnica (con etiquetas auto-derivadas)
+  const title = useMemo(
+    () => buildReportTitle(autoLabels.regions, autoLabels.contrast),
+    [autoLabels]
+  );
+  const technique = useMemo(
+    () => buildTechniqueBlock(autoLabels.regions, autoLabels.contrast),
+    [autoLabels]
+  );
+
+  function handleGenerate() {
+    // Partir dictado en frases
+    const rawItems = (dictado.match(SENTENCE_SPLIT) ? dictado.split(SENTENCE_SPLIT) : [dictado])
+      .map((x) => x.trim())
+      .filter(Boolean);
+
+    // Detectar Template Mode por texto (“Valida frases normales.” al final o en alguna frase)
+    const templateMode = rawItems.some((x) => normalize(x).includes("valida frases normales"));
+
+    // Quitar la primera línea (es el “tipo de TC…”) del set de hallazgos
+    const hallazgosText = rawItems.filter((_, i) => i !== 0);
+
+    // 1) Base template (frases normales según etiquetas auto-derivadas)
+    let baseLines = buildBaseTemplate(
+      normalPhrases as NormalPhrase[],
+      autoLabels.regions,
+      autoLabels.contrast
+    );
+
+    // 2) Mapear hallazgos
+    type MappedFinding = {
+      tipo: "patologico" | "adicional" | "suelto";
+      zona?: string;
+      fraseNormal?: string;
+      texto: string;
+      oficial?: string;
+    };
+    const mapped: MappedFinding[] = [];
+
+    for (const itemRaw of hallazgosText) {
+      const item = itemRaw.replace(/\.$/, "").trim();
+      const n = normalize(item);
+      if (!n) continue;
+      if (n.includes("valida frases normales")) continue;
+
+      let mf: MappedFinding | null = null;
+
+      // exacto → patológicos
+      const hitPat = findingCatalog.pathological.get(n);
+      if (hitPat) {
+        mf = {
+          tipo: "patologico",
+          zona: hitPat.zona,
+          fraseNormal: hitPat.fraseNormal,
+          texto: ensureDot(item),
+        };
+      }
+
+      // exacto → adicionales
+      if (!mf) {
+        const hitAdd = findingCatalog.additional.get(n);
+        if (hitAdd) {
+          mf = {
+            tipo: "adicional",
+            zona: hitAdd.zona,
+            fraseNormal: hitAdd.fraseNormal,
+            texto: ensureDot(item),
+          };
+        }
+      }
+
+      // fuzzy
+      if (!mf) {
+        const fz = fuzzyIndex.get(n);
+        if (fz && !(fz.excluir || []).some((ex) => normalize(ex) === n)) {
+          const oficialN = normalize(fz.oficial);
+          const hitPat2 = findingCatalog.pathological.get(oficialN);
+          const hitAdd2 = findingCatalog.additional.get(oficialN);
+
+          if (hitPat2) {
+            mf = {
+              tipo: "patologico",
+              zona: hitPat2.zona,
+              fraseNormal: hitPat2.fraseNormal,
+              texto: ensureDot(fz.oficial),
+              oficial: fz.oficial,
+            };
+          } else if (hitAdd2) {
+            mf = {
+              tipo: "adicional",
+              zona: hitAdd2.zona,
+              fraseNormal: hitAdd2.fraseNormal,
+              texto: ensureDot(fz.oficial),
+              oficial: fz.oficial,
+            };
+          }
+        }
+      }
+
+      // suelto
+      if (!mf) {
+        mf = { tipo: "suelto", texto: ensureDot(item) };
+      }
+
+      mapped.push(mf);
+    }
+
+    // 3) Integración (reemplazar/añadir/sueltos)
+    let working = [...baseLines];
+    const addQueueByNormal = new Map<string, string[]>();
+    const replaceByNormal = new Map<string, string>();
+    const looseFindings: string[] = [];
+
+    for (const mf of mapped) {
+      if (mf.tipo === "adicional" && mf.fraseNormal) {
+        const list = addQueueByNormal.get(mf.fraseNormal) || [];
+        list.push(mf.texto);
+        addQueueByNormal.set(mf.fraseNormal, list);
+      } else if (mf.tipo === "patologico" && mf.fraseNormal) {
+        replaceByNormal.set(mf.fraseNormal, mf.texto);
+      } else if (mf.tipo === "suelto") {
+        looseFindings.push(mf.texto);
+      }
+    }
+
+    // 3.a) reemplazos
+    working = working
+      .map((line) => {
+        const rep = replaceByNormal.get(line);
+        return rep ? rep : line;
+      })
+      .filter(Boolean);
+
+    // 3.b) añadidos
+    working = working.flatMap((line) => {
+      const rep = replaceByNormal.get(line);
+      const adds = addQueueByNormal.get(line) || [];
+      if (rep) return [rep, ...adds];
+      if (adds.length) return [line, ...adds];
+      return [line];
+    });
+
+    // 3.c) sueltos antes del cierre
+    working = ensureClosing(working);
+    if (looseFindings.length) {
+      const closing = (DEFAULT_CLOSING_TEXT || "Sin otros hallazgos.").trim();
+      const idx = working.findIndex((l) => normalize(l) === normalize(closing));
+      if (idx === -1) working.push(...looseFindings);
+      else working.splice(idx, 0, ...looseFindings);
+    }
+
+    // 4) Postproceso final (Normas 6–11)
+    working = applyPostprocessNorms(working, {
+      templateMode: templateMode,
+      // PASO CLAVE: pasar las frases normales activas como anclas semánticas
+      literals: baseLines,
+    });
+
+    // 5) Salida
+    const body = working.join(" ");
+    const finalText = `${title}\n\n${technique}\n\n${buildHallazgosHeader()}\n${body}`;
+
+    setReport(finalText);
+  }
+
+  return (
+    <div
+      className="app"
+      style={{
+        maxWidth: 780,
+        margin: "40px auto",
+        padding: "0 16px",
+        fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+      }}
+    >
+      <h1 style={{ fontSize: 18, marginBottom: 8 }}>Generador de informes TC</h1>
+      <p style={{ marginTop: 0, color: "#666" }}>
+        Pega el dictado completo. La primera frase debe ser el tipo de estudio (p. ej. “TC de tórax
+        con contraste”). Si terminas con “Valida frases normales.” se aplicará el modo plantilla.
+      </p>
+
+      <div>
+        <label style={{ fontWeight: 600 }}>Dictado</label>
+        <textarea
+          placeholder={`TC de tórax con contraste. Derrame pleural izquierdo. Quistes hepáticos. Valida frases normales.`}
+          value={dictado}
+          onChange={(e) => setDictado(e.target.value)}
+          rows={8}
+          style={{ width: "100%", marginTop: 6 }}
+        />
+        <button
+          onClick={handleGenerate}
+          style={{
+            marginTop: 12,
+            padding: "10px 16px",
+            border: "1px solid #ccc",
+            borderRadius: 8,
+            cursor: "pointer",
+            background: "#111",
+            color: "#fff",
+            fontWeight: 600,
+          }}
+        >
+          Generar informe
+        </button>
+      </div>
+
+      <div style={{ marginTop: 24 }}>
+        <label style={{ fontWeight: 600 }}>Informe final</label>
+        <textarea readOnly value={report} rows={16} style={{ width: "100%", marginTop: 6 }} />
+      </div>
+
+      <div style={{ marginTop: 12, fontSize: 12, color: "#888" }}>
+        <div>Presets cargados: {Array.isArray(presets) ? presets.length : 0}</div>
+        <div>Frases normales: {Array.isArray(normalPhrases) ? normalPhrases.length : 0}</div>
+        <div>Bloques de hallazgos: {Array.isArray(findingsJson) ? findingsJson.length : 0}</div>
+        <div>Entrada fuzzy: {Array.isArray(fuzzyLexicon) ? fuzzyLexicon.length : 0}</div>
+      </div>
+    </div>
+  );
+}
+
+
+Con esto:
+
+La app deriva [TC-…] [CON/SIN CONTRASTE] de la primera frase del dictado.
+
+El modo plantilla se activa si el dictado contiene “Valida frases normales.”.
+
+El postproceso usa bucket sort por secciones anatómicas reales y toma como anclas las frases normales filtradas (literals: baseLines).
+
+Se respetan tus normas 6–11 y se garantiza el cierre.
