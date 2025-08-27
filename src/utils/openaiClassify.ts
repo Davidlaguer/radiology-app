@@ -14,24 +14,24 @@ export type LabeledFinding = {
   note?: string;
 };
 
-// Normalización rápida
-function normalize(s: string) {
-  return s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/[^\p{L}\p{N}\s]/gu, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+// Normalización rápida (actualmente no usada)
+// function normalize(s: string) {
+//   return s
+//     .toLowerCase()
+//     .normalize('NFD')
+//     .replace(/\p{Diacritic}/gu, '')
+//     .replace(/[^\p{L}\p{N}\s]/gu, '')
+//     .replace(/\s+/g, ' ')
+//     .trim();
+// }
 
 export async function classifyWithOpenAI(
   item: string,
-  regions: RegionTag[],
-  contrast: ContrastTag | null,
+  _regions: RegionTag[],
+  _contrast: ContrastTag | null,
   findingsTable: any[],
   normalPhrases: any[],
-  fuzzyTable: any[],
+  _fuzzyTable: any[],
   opts?: { model?: string }
 ): Promise<LabeledFinding> {
   const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;

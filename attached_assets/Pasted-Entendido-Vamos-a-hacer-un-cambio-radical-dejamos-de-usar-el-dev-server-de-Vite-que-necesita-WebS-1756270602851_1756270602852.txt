@@ -1,0 +1,88 @@
+Entendido. Vamos a hacer un cambio radical: dejamos de usar el dev server de Vite (que necesita WebSocket/HMR) y pasamos a servir el build de producción con vite preview. Así no hay HMR y desaparecen los errores de WebSocket/hosts.
+
+1) Cambia package.json (añade scripts y usa preview)
+
+Añade estos dos scripts (mantén los que ya tienes):
+
+{
+  "scripts": {
+    "dev": "vite --host --port 5173",
+    "build:web": "tsc -b && vite build",
+    "serve:dist": "vite preview --host --port 5173 --strictPort",
+    "preview:replit": "npm run build:web && npm run serve:dist"
+  }
+}
+
+
+Resultado: npm run preview:replit hace build y luego sirve dist/ sin HMR.
+
+2) Simplifica vite.config.ts (elimina HMR/allowedHosts)
+
+Reemplaza todo tu vite.config.ts por esto mínimo y estable:
+
+// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  // Para el modo "preview" (producción servida localmente)
+  preview: {
+    host: true,
+    port: 5173,
+    strictPort: true
+  },
+  // El server de desarrollo ya no lo usaremos en Replit
+})
+
+
+Al no usar el server de desarrollo, no se inyecta @vite/client, no hay WS, no hay HMR, y no hace falta allowedHosts.
+
+3) Haz que Run use el preview
+
+Cambia tu .replit para que ejecute el preview:
+
+run = "npm run preview:replit"
+language = "nodejs"
+
+[env]
+NODE_ENV = "production"
+
+
+(Puedes borrar replit.yaml o dejarlo sin run para no interferir.)
+
+4) Reinicia limpio y arranca
+
+En la Shell:
+
+pkill -f vite || true
+rm -rf dist
+npm run preview:replit
+
+
+Deberías ver que se levanta en el puerto 5173 y el preview abre sin errores de WebSocket ni “Blocked host”.
+
+Si Replit insiste con el puerto 5000
+
+Algunas plantillas suyas prefieren 5000. En ese caso, simplemente usa 5000 en todo:
+
+En package.json:
+
+"serve:dist": "vite preview --host --port 5000 --strictPort",
+"preview:replit": "npm run build:web && npm run serve:dist"
+
+
+En vite.config.ts:
+
+preview: { host: true, port: 5000, strictPort: true }
+
+
+En .replit:
+
+run = "npm run preview:replit"
+
+¿Y si también tienes backend?
+
+Mantén el frontend con preview (5173/5000) y ejecuta tu backend en otro puerto (por ejemplo 8000).
+
+Ajusta el CORS o VITE_API_URL para apuntar al backend.

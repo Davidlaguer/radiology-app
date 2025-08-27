@@ -5,7 +5,6 @@ import { useMemo, useState } from 'react';
 import normalPhrases from './data/normalPhrases.json';
 import findingsJson from './data/findings.json';
 import fuzzyLexicon from './data/fuzzyLexicon.json';
-import presets from './data/presets.json';
 
 // Helpers de plantillas (TÍTULO/TÉCNICA/HALLAZGOS)
 import {
