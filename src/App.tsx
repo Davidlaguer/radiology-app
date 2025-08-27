@@ -376,6 +376,8 @@ export default function App() {
     // 4) MODO PLANTILLA (Norma 11) si la última frase era "Valida frases normales."
     working = applyPostprocessNorms(working, {
       templateMode: templateMode,
+      // PASO CLAVE: pasar las frases normales activas como anclas semánticas
+      literals: baseLines,
     });
 
     // 5) Construir salida con formato obligatorio

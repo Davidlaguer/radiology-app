@@ -1,413 +1,245 @@
+
 // src/utils/postprocess.ts
-// Aplica las 11 normas oficiales de agrupación y redacción clínica.
+// Postproceso avanzado: aplica las 11 normas oficiales y orden anatómico real (bucket sort).
 
-import { DEFAULT_CLOSING_TEXT, NORMAL_LINES } from "../config/constants";
+import { DEFAULT_CLOSING_TEXT } from "../config/constants";
 
-// =========================
+// ======================
 // Tipos
-// =========================
-export type PostprocessOptions = {
-  templateMode?: boolean; // activa la Norma 11
-  literals?: typeof NORMAL_LINES; // opcional: literales personalizados
-};
-
-// =========================
-// Función principal
-// =========================
-export function applyPostprocessNorms(
-  lines: string[],
-  options: PostprocessOptions = {}
-): string[] {
-  const { templateMode = false } = options;
-
-  // Por ahora, aplicamos un postprocesamiento básico
-  let result = [...lines];
-
-  // Eliminar líneas vacías
-  result = result.filter(line => line.trim() !== '');
-
-  // En modo plantilla, mantener solo las frases normales
-  if (templateMode) {
-    // Filtrar para mantener solo frases que parecen normales/plantilla
-    result = result.filter(line => {
-      const normalized = line.toLowerCase();
-      return !normalized.includes('hallazgo') ||
-             normalized.includes('no se observa') ||
-             normalized.includes('sin') ||
-             normalized.includes('normal');
-    });
-  }
-
-  return result;
+// ======================
+export interface PostprocessOptions {
+  templateMode?: boolean;
+  literals?: string[]; // frases normales activas (de la plantilla base filtrada)
 }
 
-// =========================
-// Helpers de normas
-// =========================
-function mergeRenalPhrases(lines: string[], literals: typeof NORMAL_LINES): string[] {
-  const kidneyRight = lines.find(l => l.startsWith(literals.KIDNEY_RIGHT_PREFIX));
-  const kidneyLeft = lines.find(l => l.startsWith(literals.KIDNEY_LEFT_PREFIX));
-  const ureterRight = lines.find(l => l.startsWith(literals.URETER_RIGHT_PREFIX));
-  const ureterLeft = lines.find(l => l.startsWith(literals.URETER_LEFT_PREFIX));
+// ======================
+// Orden anatómico oficial
+// ======================
+const SECTION_ORDER = [
+  "thorax.mediastino",
+  "thorax.arteria_pulmonar",
+  "thorax.parenquima",
+  "pleura",
+  "pared_toracica",
 
-  const bothKidneys = kidneyRight && kidneyLeft;
-  const bothUreters = ureterRight && ureterLeft;
+  "hepatobiliar.higado",
+  "hepatobiliar.vasos",
+  "hepatobiliar.via_biliar",
+  "hepatobiliar.vesicula",
 
-  let out = [...lines];
+  "bazo",
+  "pancreas",
+  "suprarrenales",
 
-  if (bothKidneys) {
-    out = out.filter(l => !l.startsWith(literals.KIDNEY_RIGHT_PREFIX) && !l.startsWith(literals.KIDNEY_LEFT_PREFIX));
-    out.push(literals.KIDNEYS_PLURAL);
+  "rinones",
+  "vias_urinarias",
+
+  "adenopatias",
+  "peritoneo",
+  "tubo_digestivo",
+  "vascular",
+  "oseo",
+  "pelvico",
+  "otros",
+
+  "cierre",
+];
+
+// ======================
+// Utilidades internas
+// ======================
+function normalizeLite(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .trim();
+}
+
+// ----------------------
+// Clasificador por sección
+// ----------------------
+function classifyLine(line: string, literals: string[] = []): string {
+  const l = normalizeLite(line);
+
+  // 1) Coincidencia por literales de la plantilla base (más preciso)
+  for (const lit of literals) {
+    const nlit = normalizeLite(lit);
+    if (!nlit) continue;
+    if (l.includes(nlit)) {
+      // Mapeo por ancla semántica (frases normales conocidas)
+      if (/mediastinic/.test(nlit)) return "thorax.mediastino";
+      if (/arteria pulmonar/.test(nlit)) return "thorax.arteria_pulmonar";
+      if (/parenquima pulmonar/.test(nlit)) return "thorax.parenquima";
+      if (/espacios pleurales/.test(nlit)) return "pleura";
+      if (/higado|higado de tamano|hepa/.test(nlit)) return "hepatobiliar.higado";
+      if (/vena porta|suprahepatic|esplenoportal/.test(nlit)) return "hepatobiliar.vasos";
+      if (/via biliar|coledoc/.test(nlit)) return "hepatobiliar.via_biliar";
+      if (/vesicula biliar/.test(nlit)) return "hepatobiliar.vesicula";
+      if (/bazo/.test(nlit)) return "bazo";
+      if (/pancreas|wirsung/.test(nlit)) return "pancreas";
+      if (/suprarrenal/.test(nlit)) return "suprarrenales";
+      if (/rinon/.test(nlit)) return "rinones";
+      if (/via urinaria/.test(nlit)) return "vias_urinarias";
+      if (/adenopati/.test(nlit)) return "adenopatias";
+      if (/peritoneo/.test(nlit)) return "peritoneo";
+      if (/recto|engrosamiento rectal|colitis|diverticul/.test(nlit)) return "tubo_digestivo";
+      if (/degenerativ|fractura/.test(nlit)) return "oseo";
+      if (/prostata|ovario|utero/.test(nlit)) return "pelvico";
+      if (/sin otros hallazgos/.test(nlit)) return "cierre";
+    }
   }
 
-  if (bothUreters) {
-    out = out.filter(l => !l.startsWith(literals.URETER_RIGHT_PREFIX) && !l.startsWith(literals.URETER_LEFT_PREFIX));
-    out.push(literals.URETERS_PLURAL);
-  }
+  // 2) Heurística por keywords (fallback seguro)
+  if (/mediast/.test(l)) return "thorax.mediastino";
+  if (/arteria pulmonar|defecto de replecion|tep/.test(l)) return "thorax.arteria_pulmonar";
+  if (/pulmon|nodul|vidrio|atelectas|enfisem/.test(l)) return "thorax.parenquima";
+  if (/pleur/.test(l)) return "pleura";
+  if (/higado|hepat|hepatico/.test(l)) return "hepatobiliar.higado";
+  if (/porta|suprahepatic|esplenoportal/.test(l)) return "hepatobiliar.vasos";
+  if (/coledoc|biliar/.test(l)) return "hepatobiliar.via_biliar";
+  if (/vesicul|colecist/.test(l)) return "hepatobiliar.vesicula";
+  if (/bazo|esplen/.test(l)) return "bazo";
+  if (/pancreas|wirsung|pancreat/.test(l)) return "pancreas";
+  if (/suprarrenal|adrenal/.test(l)) return "suprarrenales";
+  if (/rinon|renal/.test(l)) return "rinones";
+  if (/ureter|urinari/.test(l)) return "vias_urinarias";
+  if (/adenopat/.test(l)) return "adenopatias";
+  if (/peritoneo|mesenter/.test(l)) return "peritoneo";
+  if (/colon|recto|sigma|diverticul|colitis|proctitis/.test(l)) return "tubo_digestivo";
+  if (/ateromatosis|aorta|vascular/.test(l)) return "vascular";
+  if (/fractura|osteol|degenerativ/.test(l)) return "oseo";
+  if (/prostata|ovario|utero|endometr/.test(l)) return "pelvico";
+  if (/post[-\s]?iq|cambios post|post[-\s]?operatori/.test(l)) return "otros";
+  if (/sin otros hallazgos/.test(l)) return "cierre";
 
-  return out;
+  return "otros";
+}
+
+// ----------------------
+// Normas (6–10) compactas
+// ----------------------
+function mergeRenalPhrases(lines: string[]): string[] {
+  // Si están las 4 frases "Riñón dcho/izdo normal + sin lesiones + sin dilatación"
+  const rightNormal = /riñón derecho.*tamaño y morfolog/i;
+  const leftNormal = /riñón izquierdo.*tamaño y morfolog/i;
+  const rightNoDil = /vía urinaria derecha/i;
+  const leftNoDil = /vía urinaria izquierda/i;
+
+  const hasRight = lines.some((l) => rightNormal.test(l));
+  const hasLeft = lines.some((l) => leftNormal.test(l));
+  const hasRightNoDil = lines.some((l) => rightNoDil.test(l));
+  const hasLeftNoDil = lines.some((l) => leftNoDil.test(l));
+
+  if (hasRight && hasLeft && hasRightNoDil && hasLeftNoDil) {
+    const filtered = lines.filter(
+      (l) =>
+        !rightNormal.test(l) &&
+        !leftNormal.test(l) &&
+        !rightNoDil.test(l) &&
+        !leftNoDil.test(l)
+    );
+    filtered.push(
+      "Riñones de tamaño y morfología normales. No se observan lesiones focales ni dilatación de las vías urinarias."
+    );
+    return filtered;
+  }
+  return lines;
 }
 
 function removeConflicts(lines: string[]): string[] {
-  // Norma 7 – Si hay hiperplasia y suprarrenales normales, eliminar la normal
-  return lines.filter(l => {
-    if (l.includes("Glándulas suprarrenales") && lines.some(x => x.match(/hiperplasia/i))) {
-      return false;
-    }
-    return true;
-  });
+  // Ejemplo: si hay hiperplasia suprarrenal, elimina la línea "suprarrenales normales"
+  const hasHyper = lines.some((l) => /hiperplasia adrenal|hiperplasia suprarrenal/i.test(l));
+  if (!hasHyper) return lines;
+  return lines.filter(
+    (l) =>
+      !/glándulas suprarrenales de tamaño y morfolog/i.test(l)
+  );
 }
 
 function replacePartial(lines: string[]): string[] {
-  // Norma 8 – Sustituir "No se observan lesiones focales" → "No se observan otras lesiones focales"
-  return lines.map(l => {
-    if (l.includes("No se observan lesiones focales") && l.match(/quiste|microlitiasis|granuloma/i)) {
-      return l.replace("No se observan lesiones focales", "No se observan otras lesiones focales");
+  return lines.map((l) => {
+    if (
+      /no se observan lesiones focales/i.test(l) &&
+      /(quiste|granuloma|microlitiasis)/i.test(l)
+    ) {
+      return l.replace(
+        /no se observan lesiones focales/i,
+        "No se observan otras lesiones focales"
+      );
     }
     return l;
   });
 }
 
 function deduplicate(lines: string[]): string[] {
-  // Norma 9 – eliminar duplicados
-  return Array.from(new Set(lines));
-}
-
-function filterPulmonary(lines: string[], literals: typeof NORMAL_LINES): string[] {
-  // Norma 10 – Si hay patología pulmonar, eliminar la normal automática
-  if (lines.some(l => l.match(/atelectasia|enfisema|vidrio/i))) {
-    return lines.filter(l => !l.startsWith(literals.LUNG_PREFIX));
-  }
-  return lines;
-}
-
-function enforceTemplateMode(lines: string[]): string[] {
-  // Norma 11 – Reordenar según estructura anatómica oficial
-  // (simplificado: orden alfabético, puedes reemplazar con tu orden anatómico real)
-  return [...lines].sort();
-}
-
-function ensureClosing(lines: string[]): string[] {
-  const closing = DEFAULT_CLOSING_TEXT || "Sin otros hallazgos.";
-  if (!lines.some(l => l.trim() === closing)) {
-    return [...lines, closing];
-  }
-  return lines;
-}
-
-// Re-export existing functions for compatibility
-export type Line = string;
-
-export interface PostprocessOptions2 {
-  modeTemplate?: boolean;
-  literals?: Partial<typeof NORMAL_LINES>;
-  pleuraParenchymaRule?: boolean;
-  templateOrder?: string[];
-  normalizeEndPunctuation?: boolean;
-}
-
-export const NORMAL_LINES2 = {
-  LUNG_PREFIX:
-    'Parénquima pulmonar sin alteraciones a destacar. No se observan condensaciones de espacio aéreo ni nódulos pulmonares.',
-  PLEURA_PREFIX: 'Espacios pleurales libres.',
-  ADRENALS_BOTH_PREFIX: 'Glándulas suprarrenales de tamaño y morfología normales',
-  ADRENAL_RIGHT_NORMAL: 'Glándula suprarrenal derecha de tamaño y morfología normal.',
-  ADRENAL_LEFT_NORMAL: 'Glándula suprarrenal izquierda de tamaño y morfología normal.',
-  KIDNEY_RIGHT_PREFIX: 'Riñón derecho de tamaño y morfología normales.',
-  KIDNEY_LEFT_PREFIX: 'Riñón izquierdo de tamaño y morfología normales.',
-  KIDNEYS_PLURAL: 'Riñones de tamaño y morfología normales.',
-  URETER_RIGHT_PREFIX:
-    'No se observan lesiones focales ni dilatación de la vía urinaria derecha.',
-  URETER_LEFT_PREFIX:
-    'No se observan lesiones focales ni dilatación de la vía urinaria izquierda.',
-  URETERS_PLURAL:
-    'No se observan lesiones focales ni dilatación de las vías urinarias.',
-  DEFAULT_CLOSING_TEXT: 'Sin otros hallazgos.',
-} as const;
-
-const stripAccents = (s: string) =>
-  s
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase();
-
-const endsWithSentencePunct = (s: string) => /[.!?…]$/.test(s.trim());
-
-const ensureFinalDot = (s: string) => {
-  const t = s.trim();
-  if (!t) return t;
-  if (endsWithSentencePunct(t)) return t;
-  if (/:$/.test(t)) return t;
-  return t + '.';
-};
-
-const uniqStable = (arr: Line[]) => {
   const seen = new Set<string>();
-  const out: Line[] = [];
-  for (const line of arr) {
-    const key = line.trim();
-    if (!key) continue;
-    if (!seen.has(key)) {
-      seen.add(key);
-      out.push(line);
-    }
+  const out: string[] = [];
+  for (const l of lines) {
+    const key = normalizeLite(l);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(l);
   }
   return out;
-};
-
-const defaultOrderAnchors: string[] = [
-  'Estructuras mediastínicas',
-  'Arteria pulmonar',
-  'No se observan signos de TEP central',
-  'Adenopatías mediastínicas',
-  'Adenopatías supraclaviculares',
-  'Parénquima pulmonar',
-  'Espacios pleurales',
-  'Hígado de tamaño y morfología',
-  'No se observan lesiones focales hepáticas',
-  'Vena porta',
-  'No se observa dilatación de la vía biliar',
-  'Vesícula biliar',
-  'Bazo de tamaño y morfología',
-  'Páncreas de tamaño y morfología',
-  'Glándulas suprarrenales de tamaño y morfología',
-  'Riñón derecho',
-  'No se observan lesiones focales ni dilatación de la vía urinaria derecha',
-  'Riñón izquierdo',
-  'No se observan lesiones focales ni dilatación de la vía urinaria izquierda',
-  'No se observan adenopatías intraabdominales',
-  'No se observan adenopatías pélvicas o inguinales',
-  'No se observan colecciones, neumoperitoneo',
-];
-
-function hasPleuraPathology(lines: Line[], literals: typeof NORMAL_LINES2): boolean {
-  const normal = literals.PLEURA_PREFIX.trim();
-  const trig = [
-    'derrame',
-    'engrosamiento pleural',
-    'engrosamientos pleurales',
-    'pleurodesis',
-    'calcificaciones pleurales',
-    'placas pleurales',
-    'líquido pleural',
-    'liquido pleural',
-  ];
-  return lines.some((raw) => {
-    const line = raw.trim();
-    if (!line || line === normal) return false;
-    const L = stripAccents(line);
-    return trig.some((w) => L.includes(stripAccents(w)));
-  });
 }
 
-function hasLungParenchymaPathology(
-  lines: Line[],
-  literals: typeof NORMAL_LINES2
-): boolean {
-  const normal = literals.LUNG_PREFIX.trim();
-  const trig = [
-    'enfisema',
-    'vidrio',
-    'condensacion',
-    'condensación',
-    'nódulo',
-    'nodulo',
-    'nódulos',
-    'nodulos',
-    'masa',
-    'metástasis',
-    'metastasis',
-    'linfangitis',
-    'engrosamientos bronquiales',
-    'broncopatía',
-    'broncopatia',
-    'opacidades',
-    'patron intersticial',
-    'patrón intersticial',
-    'reticulacion',
-    'reticulación',
-    'engrosamientos septales',
-  ];
-  return lines.some((raw) => {
-    const line = raw.trim();
-    if (!line || line === normal) return false;
-    const L = stripAccents(line);
-    return trig.some((w) => L.includes(stripAccents(w)));
-  });
+function filterPulmonary(lines: string[]): string[] {
+  // Si hay patología pulmonar clara, elimina "Parénquima pulmonar sin alteraciones…"
+  const hasPath =
+    /vidrio|atelectas|engrosamiento bronq|linfangitis|neumonitis|nódul|enfisem/i.test(
+      lines.join(" ")
+    );
+  if (!hasPath) return lines;
+  return lines.filter(
+    (l) => !/parénquima pulmonar sin alteraciones/i.test(l)
+  );
 }
 
-function groupKidneysAndUreters(lines: Line[], literals: typeof NORMAL_LINES2): Line[] {
-  const out: Line[] = [];
-  let hasRightKidneyNormal = false;
-  let hasLeftKidneyNormal = false;
-  let hasRightUreterNormal = false;
-  let hasLeftUreterNormal = false;
-
-  const kidneyPathologyTriggers = [
-    'atrofia',
-    'nefrectom',
-    'hipoplasia',
-    'tumor',
-    'masa renal',
-    'pielonefritis',
-    'litiasis',
-    'quiste',
-    'quistes',
-    'cicatriz',
-    'cicatrices',
-    'aumentado de tamaño',
-    'signos inflamatorios',
-  ].map(stripAccents);
-
-  const ureterPathologyTriggers = [
-    'ectasia',
-    'hidronefrosis',
-    'dilatación de pelvis',
-    'dilatacion de pelvis',
-    'ureterohidronefrosis',
-    'pelvis extrarrenal',
-    'sindome de la union',
-    'síndrome de la unión',
-    'engrosamiento urotelial',
-    'tumor de vías',
-    'tumor de vias',
-  ].map(stripAccents);
+// ----------------------
+// enforceTemplateMode → bucket sort por secciones
+// ----------------------
+function enforceTemplateMode(lines: string[], literals: string[] = []): string[] {
+  const buckets: Record<string, string[]> = {};
+  for (const key of SECTION_ORDER) buckets[key] = [];
 
   for (const line of lines) {
-    const t = line.trim();
-    if (!t) continue;
-    if (t === literals.KIDNEY_RIGHT_PREFIX) hasRightKidneyNormal = true;
-    if (t === literals.KIDNEY_LEFT_PREFIX) hasLeftKidneyNormal = true;
-    if (t === literals.URETER_RIGHT_PREFIX) hasRightUreterNormal = true;
-    if (t === literals.URETER_LEFT_PREFIX) hasLeftUreterNormal = true;
+    const section = classifyLine(line, literals);
+    (buckets[section] ??= []).push(line);
   }
 
-  const textAll = lines.map((s) => stripAccents(s));
-  const forbidKidneys =
-    textAll.some((L) =>
-      kidneyPathologyTriggers.some((w) => L.includes(w))
-    ) === true;
-  const forbidUreters =
-    textAll.some((L) =>
-      ureterPathologyTriggers.some((w) => L.includes(w))
-    ) === true;
+  const ordered: string[] = [];
+  for (const key of SECTION_ORDER) ordered.push(...buckets[key]);
 
-  const willGroupKidneys =
-    hasRightKidneyNormal && hasLeftKidneyNormal && !forbidKidneys;
-  const willGroupUreters =
-    hasRightUreterNormal && hasLeftUreterNormal && !forbidUreters;
+  return ordered;
+}
 
-  for (const line of lines) {
-    const t = line.trim();
+// ======================
+// Función principal
+// ======================
+export function applyPostprocessNorms(
+  lines: string[],
+  options: PostprocessOptions = {}
+): string[] {
+  let result = [...lines];
 
-    if (willGroupKidneys) {
-      if (t === literals.KIDNEY_RIGHT_PREFIX || t === literals.KIDNEY_LEFT_PREFIX) {
-        if (!out.includes(literals.KIDNEYS_PLURAL)) {
-          out.push(literals.KIDNEYS_PLURAL);
-        }
-        continue;
-      }
-    }
+  // Normas 6–10
+  result = mergeRenalPhrases(result);
+  result = removeConflicts(result);
+  result = replacePartial(result);
+  result = deduplicate(result);
+  result = filterPulmonary(result);
 
-    if (willGroupUreters) {
-      if (t === literals.URETER_RIGHT_PREFIX || t === literals.URETER_LEFT_PREFIX) {
-        if (!out.includes(literals.URETERS_PLURAL)) {
-          out.push(literals.URETERS_PLURAL);
-        }
-        continue;
-      }
-    }
-
-    out.push(line);
+  // Norma 11: modo plantilla (agrupación/orden anatómico real)
+  if (options.templateMode) {
+    result = enforceTemplateMode(result, options.literals || []);
   }
 
-  return out;
-}
-
-function applyPleuraParenchymaRule(lines: Line[], literals: typeof NORMAL_LINES2): Line[] {
-  const pleuraBad = hasPleuraPathology(lines, literals);
-  const lungBad = hasLungParenchymaPathology(lines, literals);
-  if (!pleuraBad && !lungBad) return lines.slice();
-
-  return lines.filter((raw) => {
-    const t = raw.trim();
-    if (!t) return false;
-    if (pleuraBad && t === literals.PLEURA_PREFIX) return false;
-    if (lungBad && t === literals.LUNG_PREFIX) return false;
-    return true;
-  });
-}
-
-function reorderByTemplate(lines: Line[], anchors?: string[]): Line[] {
-  const A = (anchors && anchors.length ? anchors : defaultOrderAnchors).map(stripAccents);
-
-  const scored = lines.map((line, idx) => {
-    const L = stripAccents(line);
-    let score = A.length + idx;
-    for (let i = 0; i < A.length; i++) {
-      if (L.includes(A[i])) {
-        score = i;
-        break;
-      }
-    }
-    return { line, idx, score };
-  });
-
-  scored.sort((a, b) => a.score - b.score || a.idx - b.idx);
-  return scored.map((s) => s.line);
-}
-
-export function postprocessLines(
-  rawLines: Line[],
-  options: PostprocessOptions2 = {}
-): Line[] {
-  const literals = { ...NORMAL_LINES2, ...(options.literals ?? {}) };
-
-  let lines = rawLines
-    .map((s) => (options.normalizeEndPunctuation === false ? s.trim() : ensureFinalDot(s)))
-    .filter((s) => s.trim().length > 0);
-
-  lines = uniqStable(lines);
-
-  if (options.pleuraParenchymaRule !== false) {
-    lines = applyPleuraParenchymaRule(lines, literals);
+  // Garantizar cierre
+  const closing = (DEFAULT_CLOSING_TEXT || "Sin otros hallazgos.").trim();
+  if (!result.some((l) => normalizeLite(l) === normalizeLite(closing))) {
+    result.push(closing);
   }
 
-  lines = groupKidneysAndUreters(lines, literals);
-
-  if (options.modeTemplate) {
-    lines = reorderByTemplate(lines, options.templateOrder);
-  }
-
-  const closing = literals.DEFAULT_CLOSING_TEXT;
-  const withoutClosing = lines.filter((l) => l.trim() !== closing);
-  const hasClosing = lines.length !== withoutClosing.length;
-  lines = withoutClosing;
-  if (hasClosing) lines.push(closing);
-
-  return lines;
-}
-
-export function buildFindingsBlock(lines: Line[]): string {
-  return lines.join('\n');
+  return result;
 }
