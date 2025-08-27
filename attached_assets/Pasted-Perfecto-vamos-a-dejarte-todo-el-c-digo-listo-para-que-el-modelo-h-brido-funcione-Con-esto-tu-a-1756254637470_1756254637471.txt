@@ -1,0 +1,222 @@
+Perfecto 🙌, vamos a dejarte todo el código listo para que el modelo híbrido funcione.
+Con esto tu app resolverá hallazgos en local (con findings.json + fuzzyLexicon.json) y usará OpenAI sólo si no logra clasificarlos.
+
+⚠️ Tranquilo, no pongas tu API key directamente en el código — se usa desde .env o desde Replit Secrets.
+
+📂 Archivos modificados / añadidos
+1. src/utils/openaiClassify.ts ✅ nuevo archivo
+// src/utils/openaiClassify.ts
+// Clasificador híbrido: local primero, OpenAI solo si no se reconoce.
+// Requiere VITE_OPENAI_API_KEY y VITE_USE_OPENAI=1 en .env o Replit Secrets.
+
+export type RegionTag = 'TC-TORAX' | 'TC-ABDOMEN';
+export type ContrastTag = 'CON CONTRASTE' | 'SIN CONTRASTE';
+
+export type LabeledFinding = {
+  input_text: string;
+  official_label: string | null;
+  class_type: 'patologico' | 'adicional' | 'suelto';
+  target_frase_normal: string | null;
+  note?: string;
+};
+
+// Normalización rápida
+function normalize(s: string) {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^\p{L}\p{N}\s]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export async function classifyWithOpenAI(
+  item: string,
+  regions: RegionTag[],
+  contrast: ContrastTag | null,
+  findingsTable: any[],
+  normalPhrases: any[],
+  fuzzyTable: any[],
+  opts?: { model?: string }
+): Promise<LabeledFinding> {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
+  const useOpenAI = import.meta.env.VITE_USE_OPENAI === '1';
+
+  if (!useOpenAI || !apiKey) {
+    return {
+      input_text: item,
+      official_label: null,
+      class_type: 'suelto',
+      target_frase_normal: null,
+      note: 'OpenAI desactivado.',
+    };
+  }
+
+  const patologicos: string[] = [];
+  const adicionales: string[] = [];
+  for (const row of findingsTable) {
+    patologicos.push(...(row.hallazgos_patologicos || []));
+    adicionales.push(...(row.hallazgos_adicionales || []));
+  }
+
+  const posiblesFrases = normalPhrases.map((x: any) => x.text);
+
+  const systemPrompt =
+    `Eres un asistente que clasifica hallazgos radiológicos en español.\n` +
+    `Catálogo permitido:\n` +
+    `Patológicos: ${JSON.stringify(patologicos)}\n` +
+    `Adicionales: ${JSON.stringify(adicionales)}\n` +
+    `Frases normales posibles: ${JSON.stringify(posiblesFrases)}\n` +
+    `Responde SOLO con JSON válido.\n` +
+    `Esquema: { "input_text": "...", "official_label": string|null, "class_type": "patologico|adicional|suelto", "target_frase_normal": string|null }`;
+
+  const res = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: opts?.model || 'gpt-4.1-mini',
+      input: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: item },
+      ],
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'finding_schema',
+          schema: {
+            type: 'object',
+            properties: {
+              input_text: { type: 'string' },
+              official_label: { type: ['string', 'null'] },
+              class_type: { type: 'string', enum: ['patologico', 'adicional', 'suelto'] },
+              target_frase_normal: { type: ['string', 'null'] },
+            },
+            required: ['input_text', 'class_type'],
+            additionalProperties: false,
+          },
+          strict: true,
+        },
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    return {
+      input_text: item,
+      official_label: null,
+      class_type: 'suelto',
+      target_frase_normal: null,
+      note: `Error OpenAI: ${res.status}`,
+    };
+  }
+
+  const data = await res.json();
+  const text = (data?.output_text ?? '').trim();
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {
+      input_text: item,
+      official_label: null,
+      class_type: 'suelto',
+      target_frase_normal: null,
+      note: 'Fallo parseo OpenAI',
+    };
+  }
+}
+
+2. src/App.tsx ✅ modificado
+
+He cambiado la parte de handleGenerate() → ahora los hallazgos sueltos llaman a OpenAI.
+
+Busca en tu archivo la parte de:
+
+for (const item of rawItems) {
+  const n = normalize(item);
+  ...
+
+
+Y sustitúyela entera por esto:
+
+import { classifyWithOpenAI } from './utils/openaiClassify';  // ⬅️ NUEVO IMPORT
+
+...
+
+for (const item of rawItems) {
+  const n = normalize(item);
+  if (!n) continue;
+  if (n.includes('valida frases normales')) continue;
+
+  let mf: MappedFinding | null = null;
+
+  // 1) exact match en tablas
+  const hitPat = findingCatalog.pathological.get(n);
+  if (hitPat) {
+    mf = { tipo: 'patologico', zona: hitPat.zona, fraseNormal: hitPat.fraseNormal, texto: ensureDot(item) };
+  }
+  const hitAdd = findingCatalog.additional.get(n);
+  if (!mf && hitAdd) {
+    mf = { tipo: 'adicional', zona: hitAdd.zona, fraseNormal: hitAdd.fraseNormal, texto: ensureDot(item) };
+  }
+
+  // 2) fuzzy en fuzzyLexicon
+  if (!mf) {
+    const fz = fuzzyIndex.get(n);
+    if (fz && !(fz.excluir || []).some(ex => normalize(ex) === n)) {
+      const oficialN = normalize(fz.oficial);
+      const hitPat2 = findingCatalog.pathological.get(oficialN);
+      const hitAdd2 = findingCatalog.additional.get(oficialN);
+      if (hitPat2) mf = { tipo: 'patologico', zona: hitPat2.zona, fraseNormal: hitPat2.fraseNormal, texto: ensureDot(fz.oficial) };
+      else if (hitAdd2) mf = { tipo: 'adicional', zona: hitAdd2.zona, fraseNormal: hitAdd2.fraseNormal, texto: ensureDot(fz.oficial) };
+    }
+  }
+
+  // 3) si sigue suelto → llama a OpenAI
+  if (!mf) {
+    const res = await classifyWithOpenAI(item, regions, contrast, findingsJson as any, normalPhrases as any, fuzzyLexicon as any);
+    if (res.class_type === 'patologico' && res.target_frase_normal) {
+      mf = { tipo: 'patologico', fraseNormal: res.target_frase_normal, texto: ensureDot(res.input_text) };
+    } else if (res.class_type === 'adicional' && res.target_frase_normal) {
+      mf = { tipo: 'adicional', fraseNormal: res.target_frase_normal, texto: ensureDot(res.input_text) };
+    } else {
+      mf = { tipo: 'suelto', texto: ensureDot(res.input_text) };
+    }
+  }
+
+  mapped.push(mf);
+}
+
+3. .env ✅ nuevo archivo en la raíz del proyecto
+
+Crea este archivo en la raíz del proyecto:
+
+VITE_USE_OPENAI=1
+VITE_OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxx
+
+
+En Replit → pon estas dos variables en Secrets en vez de .env.
+
+🚀 Flujo ahora
+
+Dictas → rawItems se separan en frases.
+
+Cada frase se intenta clasificar en:
+
+Local exacto (findings.json).
+
+Fuzzy (fuzzyLexicon.json).
+
+Si no se reconoce → OpenAI (classifyWithOpenAI).
+
+OpenAI devuelve JSON con:
+
+class_type: patologico|adicional|suelto
+
+target_frase_normal si corresponde.
+
+Se integra en tu informe con las 11 normas.
