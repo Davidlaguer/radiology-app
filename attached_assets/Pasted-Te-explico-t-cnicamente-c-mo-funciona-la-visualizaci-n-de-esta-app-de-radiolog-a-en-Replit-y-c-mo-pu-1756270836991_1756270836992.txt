@@ -1,0 +1,65 @@
+Te explico técnicamente cómo funciona la visualización de esta app de radiología en Replit y cómo puedes aplicarlo a tu otra app con problemas de WebSockets:
+
+Configuración clave en Replit
+1. Configuración de Vite (vite.config.ts)
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    host: true,          // 🔑 Permite escuchar en 0.0.0.0
+    port: 5173,
+    strictPort: true,
+    hmr: { clientPort: 443 }, // 🔑 Hot Module Replacement por puerto 443
+    allowedHosts: [
+      ".replit.dev"      // 🔑 Permite todos los subdominios de Replit
+    ]
+  }
+})
+2. Script de desarrollo (package.json)
+"scripts": {
+  "dev": "vite --host --port 5173"
+}
+3. Configuración de Replit (.replit)
+[deployment]
+run = ["sh", "-c", "npm run build && npm run preview"]
+[[ports]]
+localPort = 5173
+externalPort = 80
+¿Por qué funciona sin problemas?
+host: true → Hace que Vite escuche en 0.0.0.0:5173 en lugar de localhost:5173
+allowedHosts: [".replit.dev"] → Permite conexiones desde cualquier subdominio de Replit
+hmr: { clientPort: 443 } → El Hot Reload usa HTTPS (puerto 443) para evitar problemas de mixed content
+Mapeo de puertos → Replit mapea el puerto interno 5173 al puerto externo 80
+Para tu app con problemas de WebSockets:
+Si usas Vite + React/Vue:
+Copia exactamente la configuración del vite.config.ts de arriba.
+
+Si usas Next.js:
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    allowedHosts: ['.replit.dev']
+  }
+}
+module.exports = nextConfig
+Si usas WebSocket Server (Node.js):
+// Para WebSockets, asegúrate de usar 0.0.0.0
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({ 
+  host: '0.0.0.0',  // 🔑 No uses 'localhost'
+  port: 3000 
+});
+Si usas Socket.io:
+const io = require('socket.io')(server, {
+  cors: {
+    origin: process.env.REPL_SLUG ? 
+      `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 
+      "http://localhost:3000",
+    credentials: true
+  }
+});
+Elementos críticos para Replit:
+Siempre usar 0.0.0.0 como host, nunca localhost
+Permitir dominios .replit.dev en configuraciones CORS/allowedHosts
+Para HTTPS/WSS: Usar puerto 443 para conexiones cliente
+Variables de entorno: REPL_SLUG y REPL_OWNER para construir URLs dinámicamente
