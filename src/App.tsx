@@ -306,7 +306,7 @@ export default function App() {
       const maps = buildMapsForLLM(findingsJson as FindingEntry[], fuzzyLexicon as FuzzyEntry[]);
 
       // Llamada al backend LLM
-      const plan: LlmPlan = await fetch('/api/llm-plan', {
+      const response = await fetch('/api/llm-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -315,7 +315,13 @@ export default function App() {
           maps,
           templateMode
         })
-      }).then(r => r.json());
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const plan: LlmPlan = await response.json();
 
       // Aplicar plan sobre baseNormals
       let working = [...baseNormals];
