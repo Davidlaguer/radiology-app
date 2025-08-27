@@ -26,6 +26,10 @@ import { DEFAULT_CLOSING_TEXT } from './config/constants';
 // Modal component
 import Modal from './components/Modal';
 
+// Sistema híbrido de clasificación
+import { classifyWithLLM } from './services/openaiClassifier';
+import { buildCatalogSubset } from './utils/buildCatalogSubset';
+
 // =========================
 // Tipos locales
 // =========================
@@ -416,15 +420,29 @@ export default function App() {
         }
       }
 
-      // 3) si sigue suelto → llama a OpenAI
+      // 3) si sigue suelto → llama a nuestro sistema híbrido OpenAI
       if (!mf) {
-        const res = await classifyWithOpenAI(item, regions, contrast, findingsJson as any, normalPhrases as any, fuzzyLexicon as any);
-        if (res.class_type === 'patologico' && res.target_frase_normal) {
-          mf = { tipo: 'patologico', fraseNormal: res.target_frase_normal, texto: ensureDot(res.input_text) };
-        } else if (res.class_type === 'adicional' && res.target_frase_normal) {
-          mf = { tipo: 'adicional', fraseNormal: res.target_frase_normal, texto: ensureDot(res.input_text) };
+        const subsetCatalog = buildCatalogSubset(item, findingCatalog);
+        if (subsetCatalog.length > 0) {
+          const llmRes = await classifyWithLLM(item, subsetCatalog);
+          if (llmRes.tipo === 'patologico') {
+            mf = { 
+              tipo: 'patologico', 
+              fraseNormal: llmRes.frase_normal || undefined, 
+              texto: ensureDot(llmRes.texto_final) 
+            };
+          } else if (llmRes.tipo === 'adicional') {
+            mf = { 
+              tipo: 'adicional', 
+              fraseNormal: llmRes.frase_normal || undefined, 
+              texto: ensureDot(llmRes.texto_final) 
+            };
+          } else {
+            mf = { tipo: 'suelto', texto: ensureDot(llmRes.texto_final) };
+          }
         } else {
-          mf = { tipo: 'suelto', texto: ensureDot(res.input_text) };
+          // Sin catálogo disponible, marcar como suelto
+          mf = { tipo: 'suelto', texto: ensureDot(item) };
         }
       }
 

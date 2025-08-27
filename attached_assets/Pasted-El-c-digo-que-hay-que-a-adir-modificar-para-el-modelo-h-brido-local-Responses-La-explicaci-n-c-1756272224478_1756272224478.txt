@@ -1,0 +1,187 @@
+El código que hay que añadir/modificar para el modelo híbrido (local + Responses).
+
+La explicación clara que puedes pasarle a Replit para que te monte bien todo (conecta con tu repo, instala dependencias, y aplica estilo como en tus otras apps).
+
+1️⃣ Código necesario (híbrido)
+📂 src/services/openaiClassifier.ts (nuevo archivo)
+// src/services/openaiClassifier.ts
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: import.meta.env.VITE_OPENAI_KEY, // ⚠️ define la key en .env
+});
+
+export type CatalogItem = {
+  oficial: string;
+  tipo: "patologico" | "adicional" | "suelto";
+  frase_normal: string | null;
+};
+
+export type ClassificationResult = {
+  tipo: "patologico" | "adicional" | "suelto";
+  frase_normal: string | null;
+  texto_final: string;
+};
+
+export async function classifyWithLLM(
+  hallazgo: string,
+  catalogo: CatalogItem[]
+): Promise<ClassificationResult> {
+  const promptSystem = `
+Eres un asistente de clasificación clínica.
+Debes clasificar un hallazgo en una de estas categorías:
+- "patologico": sustituye su frase normal asociada (obligatorio devolver frase_normal EXACTA de la lista si existe).
+- "adicional": se añade detrás de su frase normal.
+- "suelto": no hay frase normal asociada; va al final antes de "Sin otros hallazgos.".
+
+REGLAS:
+1. No inventes frases normales. Solo puedes elegir frase_normal de catalogo[].frase_normal.
+2. Si ninguna aplica, responde tipo:"suelto" y frase_normal:null.
+3. Si el hallazgo contradice una frase normal → tipo:"patologico".
+4. Si es un matiz complementario → tipo:"adicional".
+5. Devuelve solo JSON válido con las claves: tipo, frase_normal, texto_final.
+  `;
+
+  const response = await client.responses.create({
+    model: "gpt-4.1-mini", // rápido y barato
+    input: [
+      { role: "system", content: promptSystem },
+      {
+        role: "user",
+        content: JSON.stringify({
+          hallazgo,
+          catalogo,
+        }),
+      },
+    ],
+    response_format: { type: "json" },
+  });
+
+  try {
+    const raw = response.output[0].content[0].text;
+    return JSON.parse(raw) as ClassificationResult;
+  } catch (e) {
+    console.error("Error parseando JSON de OpenAI:", e);
+    return { tipo: "suelto", frase_normal: null, texto_final: hallazgo };
+  }
+}
+
+📂 src/App.tsx (modificación en la parte del mapeo de hallazgos)
+
+Busca el bloque donde construyes mapped: MappedFinding[].
+Allí, después de intentar exact/fuzzy, mete:
+
+      // 2.d) Si sigue sin encajar → consulta a OpenAI con catálogo reducido
+      if (!mf) {
+        const subsetCatalog = buildCatalogSubset(item, findingCatalog); 
+        // ⚠️ implementa esta función para generar candidatos desde findings/fuzzy
+        if (subsetCatalog.length > 0) {
+          const llmRes = await classifyWithLLM(item, subsetCatalog);
+          if (llmRes.tipo === "patologico") {
+            mf = {
+              tipo: "patologico",
+              fraseNormal: llmRes.frase_normal || undefined,
+              texto: llmRes.texto_final,
+            };
+          } else if (llmRes.tipo === "adicional") {
+            mf = {
+              tipo: "adicional",
+              fraseNormal: llmRes.frase_normal || undefined,
+              texto: llmRes.texto_final,
+            };
+          } else {
+            mf = { tipo: "suelto", texto: llmRes.texto_final };
+          }
+        }
+      }
+
+
+👉 Eso convierte Responses en fallback cuando tu lógica local no resuelve.
+
+📂 src/utils/buildCatalogSubset.ts (nuevo archivo auxiliar)
+// src/utils/buildCatalogSubset.ts
+import { CatalogItem } from "../services/openaiClassifier";
+import type { FindingEntry } from "../App"; // ajusta si tu App exporta el tipo
+
+export function buildCatalogSubset(
+  hallazgo: string,
+  catalog: {
+    pathological: Map<string, { zona: string; fraseNormal: string }>;
+    additional: Map<string, { zona: string; fraseNormal: string }>;
+  }
+): CatalogItem[] {
+  const subset: CatalogItem[] = [];
+
+  // Para demo: incluir todos los entries. 
+  // ⚠️ Mejora esto con heurísticas (ej: filtrar por keywords).
+  for (const [key, value] of catalog.pathological) {
+    subset.push({
+      oficial: key,
+      tipo: "patologico",
+      frase_normal: value.fraseNormal || null,
+    });
+  }
+  for (const [key, value] of catalog.additional) {
+    subset.push({
+      oficial: key,
+      tipo: "adicional",
+      frase_normal: value.fraseNormal || null,
+    });
+  }
+
+  // Limita a máximo 30 para no sobrecargar
+  return subset.slice(0, 30);
+}
+
+📂 .env (nuevo archivo)
+VITE_OPENAI_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxx
+
+
+⚠️ Nunca subas tu key a GitHub. En Replit se configura en Secrets (Environment Variables).
+
+2️⃣ Explicación para Replit
+
+Aquí tienes el texto listo para pasarle:
+
+Hey Replit 👋 necesito tu ayuda con mi proyecto React/Electron (radiology-app).
+
+Ya tengo el repo en GitHub:
+👉 https://github.com/Davidlaguer/radiology-app
+
+Lo que quiero que hagas:
+
+Conectar el repo en Replit y arrancar como proyecto Vite React (ya está preparado).
+
+Configurar un Secret en Replit:
+
+Key: VITE_OPENAI_KEY
+
+Value: (mi API key de OpenAI, ya te la paso yo)
+
+He añadido un servicio híbrido:
+
+Si un hallazgo se reconoce localmente → se clasifica con mis JSON (findings.json, fuzzyLexicon.json).
+
+Si no se reconoce → se envía a OpenAI Responses con un catálogo acotado de opciones.
+
+OpenAI devuelve JSON con { tipo, frase_normal, texto_final } y la app lo integra.
+
+Verifica que el flujo funciona en el Preview:
+
+Campo único para dictado.
+
+Botón “Generar informe”.
+
+Modal con informe completo.
+
+Al final, si el dictado acaba con “Valida frases normales.”, se aplica el postprocess de normas.
+
+Opcional: ajusta estilos para que se vea como mis otras apps tipo On-call helper: diseño popup, modal limpio.
+
+✅ Con esto tendrás:
+
+Lógica híbrida local + OpenAI ya integrada.
+
+Seguridad: nunca inventa frases normales (solo usa las de JSON).
+
+Flujo clínico tal como definimos en tus instrucciones largas.
