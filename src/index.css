@@ -20,19 +20,33 @@ body {
 .app-container {
   min-height: 100vh;
   background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 24px;
 }
 
-/* Header de la app */
-.app-header {
+/* Popup de dictado */
+.dictation-popup {
+  max-width: 800px;
+  width: 100%;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+/* Header del popup */
+.popup-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 32px;
-  padding: 0 4px;
+  padding: 24px 32px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
 }
 
-.app-icon {
+.popup-icon {
   font-size: 24px;
   width: 40px;
   height: 40px;
@@ -45,20 +59,16 @@ body {
   font-weight: 600;
 }
 
-.app-title {
+.popup-title {
   font-size: 18px;
   font-weight: 600;
   color: #212529;
   letter-spacing: -0.01em;
+  margin: 0;
 }
 
-/* Sección de dictado */
-.dictation-section {
-  max-width: 800px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Contenido del popup */
+.popup-content {
   padding: 32px;
 }
 

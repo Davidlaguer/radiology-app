@@ -392,26 +392,29 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <div className="app-header">
-        <div className="app-icon">📋</div>
-        <h1 className="app-title">GENERADOR DE INFORMES TC</h1>
-      </div>
 
-      <div className="dictation-section">
-        <textarea
-          className="dictation-textarea"
-          placeholder="Inserta aquí tu dictado"
-          value={dictationRaw}
-          onChange={e => setDictationRaw(e.target.value)}
-          rows={12}
-        />
+      <div className="dictation-popup">
+        <div className="popup-header">
+          <div className="popup-icon">📋</div>
+          <h1 className="popup-title">GENERADOR DE INFORMES TC</h1>
+        </div>
         
-        <button
-          className="generate-button"
-          onClick={handleGenerate}
-        >
-          Generar informe
-        </button>
+        <div className="popup-content">
+          <textarea
+            className="dictation-textarea"
+            placeholder="Inserta aquí tu dictado"
+            value={dictationRaw}
+            onChange={e => setDictationRaw(e.target.value)}
+            rows={12}
+          />
+          
+          <button
+            className="generate-button"
+            onClick={handleGenerate}
+          >
+            Generar informe
+          </button>
+        </div>
       </div>
 
       <Modal 
