@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 // Datos estructurados de /src/data
 import normalPhrases from './data/normalPhrases.json';
