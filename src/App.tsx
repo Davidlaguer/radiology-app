@@ -18,7 +18,10 @@ import {
 } from './prompts/templates';
 
 // Postproceso (aplica normas + formateo final)
-import { applyPostprocessNorms, formatFindings, ensureDot } from './utils/postprocess';
+import { applyPostprocessNorms, ensureDot } from './utils/postprocess';
+
+// NUEVO: formateador final de hallazgos
+import { formatHallazgos } from './utils/formatter';
 
 // Literales/constantes
 import { DEFAULT_CLOSING_TEXT } from './config/constants';
@@ -330,8 +333,8 @@ export default function App() {
     // 5) Reagrupación/orden clínico si "Valida frases normales."
     working = applyPostprocessNorms(working, { templateMode: forceTemplate });
 
-    // 6) Formato final de HALLAZGOS con saltos pedidos
-    const body = formatFindings(working);
+    // 6) FORMATO FINAL EXACTO DE BLOQUES / SALTOS
+    const body = formatHallazgos(working, { closingText: DEFAULT_CLOSING_TEXT });
 
     // 7) Título y técnica
     const title = buildReportTitle(regions, contrast);
