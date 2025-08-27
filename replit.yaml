@@ -1,4 +1,4 @@
-run: npm run dev
+run: concurrently -k "tsx server/index.ts" "vite --host --port 5173"
 
 env:
   NODE_ENV: development

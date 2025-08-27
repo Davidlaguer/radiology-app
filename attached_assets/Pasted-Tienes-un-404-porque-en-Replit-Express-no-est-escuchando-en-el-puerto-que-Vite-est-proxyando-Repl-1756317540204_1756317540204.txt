@@ -1,3 +1,11 @@
+Tienes un 404 porque en Replit Express no está escuchando en el puerto que Vite está proxyando. Replit pone PORT en el entorno, y (tal como lo dejamos) tu servidor se subió a process.env.PORT en vez de 3001, mientras que el proxy de Vite sigue apuntando a http://localhost:3001. Resultado: Vite proxy → no hay nada en 3001 → 404.
+
+Arreglo inmediato en 3 toques:
+
+1) Fija el puerto del server a 3001 en dev
+
+Sustituye por completo tu server/index.ts por esto (nota la lógica del puerto):
+
 // server/index.ts
 import express from "express";
 import cors from "cors";
@@ -37,13 +45,13 @@ app.post("/api/plan", (req, res) => {
   };
 
   const patKeys = new Map<string, string>();
-  for (const [k, v] of Object.entries(pathologicalMap)) patKeys.set(norm(String(k)), String(v));
+  for (const [k, v] of Object.entries(pathologicalMap)) patKeys.set(norm(k), v);
 
   const addKeys = new Map<string, string>();
-  for (const [k, v] of Object.entries(additionalMap)) addKeys.set(norm(String(k)), String(v));
+  for (const [k, v] of Object.entries(additionalMap)) addKeys.set(norm(k), v);
 
   const fuzzy = new Map<string, string>();
-  for (const [k, v] of Object.entries(fuzzyMap)) fuzzy.set(norm(String(k)), String(v));
+  for (const [k, v] of Object.entries(fuzzyMap)) fuzzy.set(norm(k), v);
 
   type PlanReplace = { targetNormal: string; newLine: string };
   type PlanAdd = { afterNormal: string; newLine: string };
@@ -104,3 +112,54 @@ const PORT = isDev ? 3001 : Number(process.env.PORT || 3001);
 app.listen(PORT, () => {
   console.log(`[server] listening on http://localhost:${PORT}`);
 });
+
+2) Asegura el proxy de Vite
+
+Deja tu vite.config.ts así (si ya está igual, no toques):
+
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    host: true,
+    allowedHosts: [".replit.dev", ".repl.co"],
+    proxy: {
+      "/api": { target: "http://localhost:3001", changeOrigin: true }
+    }
+  }
+});
+
+3) Lanza ambos procesos en Replit
+
+En Replit, usa este script para que arranquen Vite y Express:
+
+En package.json asegúrate de tener:
+
+{
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "tsx server/index.ts",
+    "dev:all": "concurrently -k \"npm:dev\" \"npm:dev:server\"",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  }
+}
+
+
+En la pestaña “Run” de Replit, pon npm run dev:all (no npm run dev).
+
+Verificación rápida
+
+Abre tu preview y visita /api/health (p. ej. https://<tu-repl>...repl.dev/api/health).
+Si responde {"ok":true}, el server está bien y el proxy funciona.
+
+Pulsa “Generar informe”. El 404 debe desaparecer.
+
+¿Por qué antes funcionaba y ahora no?
+
+Antes probablemente todo corría solo con Vite (sin backend) o el server escuchaba casualmente en 3001. Al introducir el servidor y dejar PORT = process.env.PORT || 3001, Replit movió Express a otro puerto (el “externo” del repl), pero Vite sigue proxyando a 3001. Esa desincronía es la causa del 404.
+
+Con esto queda alineado: Express siempre 3001 en dev ⇄ Vite proxy → 3001.
