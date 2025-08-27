@@ -15,3 +15,6 @@ externalPort = 5173
 
 [nix]
 channel = "stable-25_05"
+
+[agent]
+integrations = ["javascript_openai==1.0.0"]
