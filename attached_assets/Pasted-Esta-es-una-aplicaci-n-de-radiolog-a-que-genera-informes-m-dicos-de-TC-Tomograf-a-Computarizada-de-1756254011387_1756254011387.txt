@@ -1,0 +1,48 @@
+Esta es una aplicación de radiología que genera informes médicos de TC (Tomografía Computarizada) de manera automatizada. La app:
+
+Recibe entrada del usuario:
+
+Etiquetas del estudio (ej: [TC-TORAX] [CON CONTRASTE])
+Dictado de hallazgos médicos (ej: "Derrame pleural izquierdo. Quistes hepáticos.")
+Procesa inteligentemente:
+
+Mapea los hallazgos dictados con zonas anatómicas específicas
+Sustituye frases normales por hallazgos patológicos cuando es necesario
+Añade hallazgos adicionales sin eliminar las frases normales
+Aplica 11 normas médicas de redacción y postproceso
+Genera un informe estructurado:
+
+TÉCNICA: Frase técnica oficial según el tipo de estudio
+HALLAZGOS: Lista ordenada anatómicamente de todos los findings
+CIERRE: "Sin otros hallazgos."
+¿Cómo funciona visualmente?
+La aplicación está diseñada como un popup compacto y minimalista con estas características:
+
+Layout Principal:
+Contenedor central de máximo 560-680px de ancho
+Una sola columna con elementos apilados verticalmente
+Fondo claro (#f7f7f8) con tarjetas que tienen sombras suaves
+Bordes redondeados (12-16px) y espaciado generoso
+Elementos de la interfaz:
+Campo "Etiquetas" - Textarea pequeña (3-4 líneas) para las etiquetas del estudio
+Campo "Hallazgos" - Textarea principal grande (10-14 líneas) para el dictado médico
+Checkbox - "Forzar 'valida frases normales'"
+Botón "Generar informe" - Botón grande, oscuro (40-44px de altura)
+Contadores de debug - Información técnica pequeña
+Modal de resultado:
+Centrado con máximo 720-840px de ancho
+Altura scrollable (70vh aproximadamente)
+Cabecera con título "Informe" y botón de cierre (X)
+Contenido en fuente monoespaciada o regular con buen espaciado
+Footer con botones opcionales (Copiar, Cerrar)
+Estética y formato:
+Estilo "On Call Helper": Minimal, limpio, contrastes altos
+Tipografía del sistema con jerarquía clara (24/18/14px)
+Paleta sobria: Grises + negro/acentos, sin colores estridentes
+Sombras discretas y estados hover/focus cuidados
+Responsive para móvil/tablet/desktop manteniendo el "popup feel"
+La app está construida con React + TypeScript + Vite y está preparada para ser empaquetada como aplicación de escritorio con Electron en el futuro.
+
+
+Scroll to latest
+Assistant mode

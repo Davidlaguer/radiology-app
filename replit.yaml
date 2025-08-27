@@ -1,0 +1,9 @@
+run: npm run dev
+entrypoint: src/main.ts
+
+env:
+  NODE_ENV: development
+
+ports:
+  - port: 5173
+    onOpen: open-preview
