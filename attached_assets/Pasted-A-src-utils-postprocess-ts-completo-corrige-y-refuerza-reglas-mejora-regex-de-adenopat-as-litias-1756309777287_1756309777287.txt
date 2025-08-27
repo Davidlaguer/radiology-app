@@ -1,9 +1,14 @@
+A. src/utils/postprocess.ts completo (corrige y refuerza reglas, mejora regex de adenopatías, litiasis y pleura).
+
+B. Parche mínimo en src/App.tsx (mantener tu texto original cuando se hace fuzzy-match, pero usando el oficial solo para localizar la frase normal a reemplazar/añadir).
+
+A) Reemplaza entero: src/utils/postprocess.ts
 // src/utils/postprocess.ts
 
 /**
  * Postproceso de líneas para el informe:
  * - Elimina contradicciones (Norma 3) típicas: nódulo pulmonar, adenopatías (torácicas e intraabdominales), colelitiasis, litiasis renal, derrame pleural…
- * - Modificación parcial de normales (Norma 8) para hígado ("No se observan otras lesiones focales hepáticas.").
+ * - Modificación parcial de normales (Norma 8) para hígado (“No se observan otras lesiones focales hepáticas.”).
  * - Deduplica el cierre y garantiza uno único al final.
  * - Modo plantilla: reagrupa por secciones anatómicas en orden estable.
  */
@@ -61,7 +66,7 @@ const CONTRADICTION_RULES: Array<{
 
   // Adenopatías torácicas (axilares / supraclaviculares / mediastínicas / hiliares)
   {
-    // requiere la palabra adenopatía y tipo, más "aumentada" o tamaño en mm
+    // requiere la palabra adenopatía y tipo, más “aumentada” o tamaño en mm
     trigger: /\badenopat[ií]a(s)?.*?\b(axilar(es)?|supraclaviculares?|mediast[ií]nic(a|as)|hiliar(es)?)\b.*?\b(aumentad[ao]s?|de\s*\d+\s*mm)\b/i,
     dropNormals: [
       /no se observan adenopat[ií]as supraclaviculares o axilares aumentadas de tama/i,
@@ -276,3 +281,41 @@ export function applyPostprocessNorms(
 
   return lines;
 }
+
+B) Parche mínimo en src/App.tsx para conservar TUS palabras
+
+Ahora, cuando hay fuzzy-match, seguiremos usando el hallazgo oficial para localizar la zona/frase normal correcta, pero el texto que se inserta será el original que dictaste (p. ej., “Bocio tiroideo”), no “Patología tiroidea”.
+
+Busca en tu handleGenerate() el bucle donde construyes mapped y sustituye la parte del fuzzy por esta:
+
+// ...dentro de for (const item of rawItems) { ... }
+      // 2.b) fuzzy → usa el *oficial* solo para anclar zona/fraseNormal,
+      // pero RESPETA el texto original dictado para la salida
+      if (!mf) {
+        const fz = fuzzyIndex.get(n);
+        if (fz && !(fz.excluir || []).some(ex => normalize(ex) === n)) {
+          const oficialN = normalize(fz.oficial);
+          const hitPat = findingCatalog.pathological.get(oficialN);
+          const hitAdd = findingCatalog.additional.get(oficialN);
+          if (hitPat) {
+            mf = {
+              tipo: 'patologico',
+              zona: hitPat.zona,
+              fraseNormal: hitPat.fraseNormal,
+              texto: item,            // ← conserva tus palabras
+              oficial: fz.oficial
+            };
+          } else if (hitAdd) {
+            mf = {
+              tipo: 'adicional',
+              zona: hitAdd.zona,
+              fraseNormal: hitAdd.fraseNormal,
+              texto: item,            // ← conserva tus palabras
+              oficial: fz.oficial
+            };
+          }
+        }
+      }
+
+
+No toques el resto del bucle. Con esto arreglas el caso de “Bocio tiroideo”.

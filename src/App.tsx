@@ -300,15 +300,31 @@ export default function App() {
         mf = { tipo: 'adicional', zona: hitAdd.zona, fraseNormal: hitAdd.fraseNormal, texto: ensureDot(item) };
       }
 
-      // 2) fuzzy en fuzzyLexicon
+      // 2.b) fuzzy → usa el *oficial* solo para anclar zona/fraseNormal,
+      // pero RESPETA el texto original dictado para la salida
       if (!mf) {
         const fz = fuzzyIndex.get(n);
         if (fz && !(fz.excluir || []).some(ex => normalize(ex) === n)) {
           const oficialN = normalize(fz.oficial);
-          const hitPat2 = findingCatalog.pathological.get(oficialN);
-          const hitAdd2 = findingCatalog.additional.get(oficialN);
-          if (hitPat2) mf = { tipo: 'patologico', zona: hitPat2.zona, fraseNormal: hitPat2.fraseNormal, texto: ensureDot(fz.oficial) };
-          else if (hitAdd2) mf = { tipo: 'adicional', zona: hitAdd2.zona, fraseNormal: hitAdd2.fraseNormal, texto: ensureDot(fz.oficial) };
+          const hitPat = findingCatalog.pathological.get(oficialN);
+          const hitAdd = findingCatalog.additional.get(oficialN);
+          if (hitPat) {
+            mf = {
+              tipo: 'patologico',
+              zona: hitPat.zona,
+              fraseNormal: hitPat.fraseNormal,
+              texto: item,            // ← conserva tus palabras
+              oficial: fz.oficial
+            };
+          } else if (hitAdd) {
+            mf = {
+              tipo: 'adicional',
+              zona: hitAdd.zona,
+              fraseNormal: hitAdd.fraseNormal,
+              texto: item,            // ← conserva tus palabras
+              oficial: fz.oficial
+            };
+          }
         }
       }
 
