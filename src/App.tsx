@@ -433,13 +433,9 @@ export default function App() {
         </div>
 
         <div className="popup-content">
-          <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-            Pega el dictado completo (la 1ª frase debe ser el tipo de TC). Ej.: <code>TC de tórax con contraste. … Valida frases normales.</code>
-          </p>
-          
           <textarea
             className="dictation-textarea"
-            placeholder="TC de tórax con contraste. Nódulo... Valida frases normales."
+            placeholder="Inserta aquí tu dictado..."
             value={dictado}
             onChange={(e) => setDictado(e.target.value)}
             rows={12}
@@ -452,12 +448,6 @@ export default function App() {
           >
             {busy ? 'Generando…' : 'Generar informe'}
           </button>
-
-          <div style={{ marginTop: '12px', fontSize: '12px', color: '#666' }}>
-            <div><strong>Regiones detectadas:</strong> {regions.join(', ') || '—'}</div>
-            <div><strong>Contraste:</strong> {contrast || '—'}</div>
-            <div><strong>Frases base incluidas:</strong> {baseNormals.length}</div>
-          </div>
         </div>
       </div>
 
