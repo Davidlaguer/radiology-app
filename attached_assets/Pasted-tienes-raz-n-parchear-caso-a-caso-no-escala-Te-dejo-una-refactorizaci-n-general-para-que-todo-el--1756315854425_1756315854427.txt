@@ -1,12 +1,227 @@
-// src/App.tsx
-import React, { useMemo, useState } from 'react';
+tienes razón: parchear caso a caso no escala. Te dejo una refactorización general para que todo el “mapeo → sustitución/añadido → formato final” lo decida OpenAI Responses con tus tablas locales como contexto reducido. La app queda así:
 
-// Datos estructurados
+La UI tiene un solo textarea (dictado) + botón.
+
+La app deduce etiquetas (tórax/abdomen + (con|sin) contraste) de la 1ª frase.
+
+Construye plantilla base desde normalPhrases.json.
+
+Llama a un micro-backend (server/index.ts) que usa Responses con JSON Schema (respuesta 100% parseable).
+
+El modelo devuelve un plan estructurado: qué reemplazar, qué añadir y qué dejar suelto.
+
+El front aplica el plan y formatea con tus saltos de línea:
+doble salto solo entre pleura → hígado (y, como siempre, bajo TÍTULO/TECNICA/HALLAZGOS), el resto salto simple.
+
+Incluyo todos los archivos completos que hay que tocar o crear. Copia/pega tal cual.
+
+1) package.json (completo)
+{
+  "name": "radiology-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:vite\" \"npm:dev:server\"",
+    "dev:vite": "vite",
+    "dev:server": "ts-node server/index.ts",
+    "build:web": "tsc -b && vite build",
+    "build": "npm run build:web",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "openai": "^4.61.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.30",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.2"
+  }
+}
+
+
+Importante: guarda tu clave como secreto del repl (o variable local) OPENAI_API_KEY. No la pongas en el front.
+
+2) vite.config.ts (completo)
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    strictPort: true,
+    allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8787',
+        changeOrigin: true
+      }
+    }
+  },
+  preview: {
+    port: 5173,
+    allowedHosts: true
+  }
+});
+
+3) Nuevo server/index.ts (micro-backend Responses)
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import OpenAI from 'openai';
+
+const app = express();
+app.use(cors());
+app.use(express.json({ limit: '2mb' }));
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+// JSON Schema para forzar respuesta estructurada
+const planSchema = {
+  name: 'llm_plan',
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      replaces: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            fraseNormal: { type: 'string' },
+            texto: { type: 'string' }
+          },
+          required: ['fraseNormal', 'texto']
+        }
+      },
+      adds: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            fraseNormal: { type: 'string' },
+            textos: {
+              type: 'array',
+              items: { type: 'string' }
+            }
+          },
+          required: ['fraseNormal', 'textos']
+        }
+      },
+      loose: {
+        type: 'array',
+        items: { type: 'string' }
+      },
+      notes: {
+        // opcional para trazabilidad (debug)
+        type: 'array',
+        items: { type: 'string' }
+      }
+    },
+    required: ['replaces', 'adds', 'loose']
+  },
+  strict: true
+} as const;
+
+app.post('/api/llm-plan', async (req, res) => {
+  try {
+    const {
+      dictadoItems,          // string[]
+      baseNormals,           // string[]
+      maps,                  // { pathologicalMap: Record<string,string>, additionalMap: Record<string,string>, fuzzyMap: Record<string,string> }
+      templateMode           // boolean
+    } = req.body || {};
+
+    if (!Array.isArray(dictadoItems) || !Array.isArray(baseNormals) || !maps) {
+      return res.status(400).json({ error: 'Payload inválido.' });
+    }
+
+    // Prompt compacto: reglas + datos reducidos
+    const system = [
+      `Eres un asistente clínico que integra hallazgos en una plantilla de informe.`,
+      `Entrada:`,
+      `- "baseNormals": lista EXACTA de frases normales disponibles para este estudio (texto literal).`,
+      `- "maps.pathologicalMap": mapa {hallazgo_oficial -> frase_normal_que_debe_REEMPLAZAR}.`,
+      `- "maps.additionalMap": mapa {hallazgo_oficial -> frase_normal_que_debe_MANTENERSE_y_AÑADIR_DETRAS}.`,
+      `- "maps.fuzzyMap": sinonimos_y_erratas -> hallazgo_oficial.`,
+      `- "dictadoItems": frases dictadas por el médico (positivas). Ignora "Sin otros hallazgos" y "Valida frases normales".`,
+      `Tu tarea:`,
+      `1) Para cada item de dictado, si coincide con un hallazgo_oficial (directo o via fuzzyMap) y existe en pathologicalMap -> produce un REEMPLAZO sobre su frase normal.`,
+      `2) Si coincide y existe en additionalMap -> produce un AÑADIDO detrás de su frase normal.`,
+      `3) Si no puedes mapear a ninguna frase normal (no existe correspondencia), colócalo en "loose".`,
+      `4) Nunca inventes frases normales nuevas. Usa SOLO las de baseNormals.`,
+      `5) Respeta el texto del usuario, asegurando punto final.`,
+      `6) Si "templateMode" es true, aplica el comportamiento normal (no cambia salida JSON; el client hará el orden y formato).`,
+      `Salida: objeto JSON con {replaces, adds, loose}.`
+    ].join('\n');
+
+    const userPayload = {
+      baseNormals,
+      dictadoItems,
+      maps,
+      templateMode
+    };
+
+    const response = await openai.responses.create({
+      model: 'gpt-4o-mini', // rápido y barato; puedes subir a gpt-4.1 si quieres
+      response_format: { type: 'json_schema', json_schema: planSchema },
+      input: [
+        { role: 'system', content: system },
+        { role: 'user', content: JSON.stringify(userPayload) }
+      ]
+    });
+
+    const content = response.output_text ?? '';
+    // responses con json_schema ya devuelve texto JSON válido
+    const plan = JSON.parse(content);
+    return res.json(plan);
+  } catch (err: any) {
+    console.error('LLM error:', err?.message || err);
+    return res.status(500).json({ error: 'LLM failure' });
+  }
+});
+
+const PORT = process.env.PORT || 8787;
+app.listen(PORT, () => {
+  console.log(`LLM server listening on http://localhost:${PORT}`);
+});
+
+
+Replit/GitHub Secrets: define OPENAI_API_KEY en el panel de secretos (o .env local).
+
+4) src/App.tsx (completo)
+// src/App.tsx
+import { useMemo, useState } from 'react';
+
+// Datos
 import normalPhrases from './data/normalPhrases.json';
 import findingsJson from './data/findings.json';
 import fuzzyLexicon from './data/fuzzyLexicon.json';
+import presets from './data/presets.json';
 
-// Helpers de plantillas (TÍTULO/TÉCNICA/HALLAZGOS)
+// Plantillas (título / técnica / helpers etiquetas)
 import {
   buildReportTitle,
   buildTechniqueBlock,
@@ -15,11 +230,8 @@ import {
   type ContrastTag,
 } from './prompts/templates';
 
-// Literales/constantes
+// Cierre por defecto
 import { DEFAULT_CLOSING_TEXT } from './config/constants';
-
-// Modal component
-import Modal from './components/Modal';
 
 // =========================
 // Tipos locales
@@ -32,7 +244,7 @@ type NormalPhrase = {
 
 type FindingEntry = {
   zona_anatomica: string;
-  frase_normal: string;
+  frase_normal: string; // puede ser "Null." en zona Otros
   hallazgos_patologicos: string[];
   hallazgos_adicionales: string[];
 };
@@ -53,9 +265,8 @@ type LlmPlan = {
 };
 
 // =========================
-// Utilidades internas
+// Helpers texto
 // =========================
-
 const SENTENCE_SPLIT = /[.]+|\n+/g;
 
 function normalize(s: string) {
@@ -100,6 +311,7 @@ function buildMapsForLLM(findingTable: FindingEntry[], fuzzy: FuzzyEntry[]) {
     const add = (v: string) => {
       const k = v.trim();
       if (!k) return;
+      // mapeamos sinónimos/erratas al oficial
       fuzzyMap[k] = target;
     };
     add(target);
@@ -119,6 +331,7 @@ function autoInferTagsFromFirstSentence(first: string): { regions: RegionTag[]; 
   if (/\btc\b.*torax|t[oó]rax/.test(n)) regions.push('TC-TORAX' as RegionTag);
   if (/\btc\b.*abdomen|abdomen/.test(n)) regions.push('TC-ABDOMEN' as RegionTag);
   if (!regions.length) {
+    // fallback por si dice "TC de tórax y abdomen..."
     if (/torax|t[oó]rax/.test(n)) regions.push('TC-TORAX' as RegionTag);
     if (/abdomen/.test(n)) regions.push('TC-ABDOMEN' as RegionTag);
   }
@@ -254,19 +467,12 @@ function formatHallazgosWithSections(lines: string[]) {
 }
 
 // =========================
-// Front-end con drag y modo nocturno
+// Front-end
 // =========================
 export default function App() {
   const [dictado, setDictado] = useState<string>('');
   const [report, setReport] = useState<string>('');
   const [busy, setBusy] = useState<boolean>(false);
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const [darkMode, setDarkMode] = useState<boolean>(false);
-  
-  // Estados para drag
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // 1ª frase → etiquetas
   const firstSentence = useMemo(() => {
@@ -361,127 +567,108 @@ export default function App() {
         `${hallazgos}`;
 
       setReport(finalText);
-      setShowModal(true);
     } catch (e) {
       console.error(e);
       setReport('Error generando el informe.');
-      setShowModal(true);
     } finally {
       setBusy(false);
     }
   }
 
-  // Funciones para drag
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget || (e.target as Element).closest('.popup-title, .popup-icon')) {
-      setIsDragging(true);
-      setDragStart({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y
-      });
-    }
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // Effects para drag
-  React.useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, dragStart]);
-
   return (
-    <div className={`app-container ${darkMode ? 'dark' : ''}`}>
+    <div
+      className="app"
+      style={{
+        maxWidth: 760,
+        margin: '40px auto',
+        padding: '0 16px',
+        fontFamily:
+          'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial'
+      }}
+    >
+      <h1 style={{ fontSize: 22, marginBottom: 8 }}>Generador de informes TC</h1>
+      <p style={{ marginTop: 0, color: '#666' }}>
+        Pega el dictado completo (la 1ª frase debe ser el tipo de TC). Ej.: <code>TC de tórax con contraste. … Valida frases normales.</code>
+      </p>
 
-      <div 
-        className={`dictation-popup ${isDragging ? 'dragging' : ''}`}
+      <label style={{ fontWeight: 600 }}>Dictado</label>
+      <textarea
+        placeholder="TC de tórax con contraste. Nódulo... Valida frases normales."
+        value={dictado}
+        onChange={(e) => setDictado(e.target.value)}
+        rows={8}
+        style={{ width: '100%', marginTop: 6 }}
+      />
+
+      <button
+        onClick={handleGenerate}
+        disabled={busy}
         style={{
-          transform: `translate(${position.x}px, ${position.y}px)`
+          marginTop: 12,
+          padding: '10px 16px',
+          border: '1px solid #ccc',
+          borderRadius: 8,
+          cursor: 'pointer',
+          background: busy ? '#666' : '#111',
+          color: '#fff',
+          fontWeight: 600
         }}
       >
-        <div 
-          className="popup-header"
-          onMouseDown={handleMouseDown}
-        >
-          <div className="popup-icon">📋</div>
-          <h1 className="popup-title">GENERADOR DE INFORMES TC</h1>
-          <button 
-            className="theme-toggle"
-            onClick={() => setDarkMode(!darkMode)}
-            onMouseDown={(e) => e.stopPropagation()}
-            aria-label="Toggle theme"
-          >
-            {darkMode ? '☀️' : '🌙'}
-          </button>
-        </div>
+        {busy ? 'Generando…' : 'Generar informe'}
+      </button>
 
-        <div className="popup-content">
-          <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-            Pega el dictado completo (la 1ª frase debe ser el tipo de TC). Ej.: <code>TC de tórax con contraste. … Valida frases normales.</code>
-          </p>
-          
-          <textarea
-            className="dictation-textarea"
-            placeholder="TC de tórax con contraste. Nódulo... Valida frases normales."
-            value={dictado}
-            onChange={(e) => setDictado(e.target.value)}
-            rows={12}
-          />
-
-          <button
-            className="generate-button"
-            onClick={handleGenerate}
-            disabled={busy}
-          >
-            {busy ? 'Generando…' : 'Generar informe'}
-          </button>
-
-          <div style={{ marginTop: '12px', fontSize: '12px', color: '#666' }}>
-            <div><strong>Regiones detectadas:</strong> {regions.join(', ') || '—'}</div>
-            <div><strong>Contraste:</strong> {contrast || '—'}</div>
-            <div><strong>Frases base incluidas:</strong> {baseNormals.length}</div>
-          </div>
-        </div>
+      <div style={{ marginTop: 18, fontSize: 12, color: '#666' }}>
+        <div><strong>Regiones detectadas:</strong> {regions.join(', ') || '—'}</div>
+        <div><strong>Contraste:</strong> {contrast || '—'}</div>
+        <div><strong>Frases base incluidas:</strong> {baseNormals.length}</div>
       </div>
 
-      <Modal
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        title="Informe TC generado"
-        width={800}
-        footer={
-          <button
-            className="btn-secondary"
-            onClick={() => setShowModal(false)}
-          >
-            Cerrar
-          </button>
-        }
-      >
+      <div style={{ marginTop: 24 }}>
+        <label style={{ fontWeight: 600 }}>Informe final</label>
         <textarea
-          className="report-textarea"
           readOnly
           value={report}
-          rows={25}
+          rows={18}
+          style={{ width: '100%', marginTop: 6 }}
         />
-      </Modal>
+      </div>
+
+      <div style={{ marginTop: 12, fontSize: 12, color: '#888' }}>
+        <div>Presets: {Array.isArray(presets) ? presets.length : 0}</div>
+        <div>Frases normales: {Array.isArray(normalPhrases) ? normalPhrases.length : 0}</div>
+        <div>Bloques de hallazgos: {Array.isArray(findingsJson) ? findingsJson.length : 0}</div>
+        <div>Entrada fuzzy: {Array.isArray(fuzzyLexicon) ? fuzzyLexicon.length : 0}</div>
+      </div>
     </div>
   );
 }
+
+Cómo usarlo
+
+Instala deps:
+
+npm i
+
+
+Crea el secreto OPENAI_API_KEY (en Replit “Secrets” o .env local).
+
+Arranca en dev:
+
+npm run dev
+
+
+Abre el preview de Vite.
+
+El server LLM levanta en http://localhost:8787 y está proxificado por /api.
+
+Por qué esto soluciona “todo” de forma general
+
+Ya no metemos regex frágiles en front: el LLM hace el mapeo a patológico/adicional/suelto usando tus tablas (findings.json + fuzzyLexicon.json) reducidas a tres mapas compactos.
+
+El formato de salida está forzado por schema → siempre obtienes {replaces, adds, loose}.
+
+El front aplica el plan de forma determinista sobre la plantilla base filtrada por etiquetas.
+
+El formateador impone tus saltos de línea: doble solo entre pleura → hígado; el resto salto simple; cierre único.
+
+Si algo no existe en tus tablas, no se inventa ninguna frase normal → se va a loose (antes del cierre), tal y como pediste.

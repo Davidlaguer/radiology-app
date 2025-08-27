@@ -88,6 +88,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // New structured LLM planning endpoint
+  app.post("/api/llm-plan", async (req, res) => {
+    try {
+      const {
+        dictadoItems,          // string[]
+        baseNormals,           // string[]
+        maps,                  // { pathologicalMap, additionalMap, fuzzyMap }
+        templateMode           // boolean
+      } = req.body || {};
+
+      if (!Array.isArray(dictadoItems) || !Array.isArray(baseNormals) || !maps) {
+        return res.status(400).json({ error: 'Payload inválido.' });
+      }
+
+      // For now, simulate LLM processing - TODO: Replace with real OpenAI Responses
+      const plan = {
+        replaces: [],
+        adds: [],
+        loose: [...dictadoItems], // For now, everything goes to loose
+        notes: ['Procesamiento simulado - pendiente integración OpenAI Responses']
+      };
+
+      console.log('LLM Plan request:', { 
+        dictadoItems, 
+        baseNormals: baseNormals.length, 
+        templateMode,
+        mapsKeys: Object.keys(maps)
+      });
+      
+      return res.json(plan);
+    } catch (err: any) {
+      console.error('LLM error:', err?.message || err);
+      return res.status(500).json({ error: 'LLM failure' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
