@@ -1,11 +1,10 @@
 // src/App.tsx
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 // Datos estructurados
 import normalPhrases from './data/normalPhrases.json';
 import findingsJson from './data/findings.json';
 import fuzzyLexicon from './data/fuzzyLexicon.json';
-import presets from './data/presets.json';
 
 // Helpers de plantillas (TÍTULO/TÉCNICA/HALLAZGOS)
 import {
@@ -23,6 +22,9 @@ import { applyPostprocessNorms, formatFindings, ensureDot } from './utils/postpr
 
 // Literales/constantes
 import { DEFAULT_CLOSING_TEXT } from './config/constants';
+
+// Modal component
+import Modal from './components/Modal';
 
 // =========================
 // Tipos locales
@@ -185,6 +187,13 @@ export default function App() {
   // UI popup simple: un solo textarea para dictado completo
   const [dictado, setDictado] = useState<string>('');
   const [report, setReport] = useState<string>('');
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+  
+  // Estados para drag
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // Índices secundarios
   const findingCatalog = useMemo(() => buildFindingCatalog(findingsJson as FindingEntry[]), []);
@@ -335,56 +344,109 @@ export default function App() {
       `${body}`;
 
     setReport(finalText);
+    setShowModal(true);
   }
 
+  // Funciones para drag
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget || (e.target as Element).closest('.popup-title, .popup-icon')) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y
+      });
+    }
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Effects para drag
+  React.useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragStart]);
+
   return (
-    <div className="app" style={{ maxWidth: 640, margin: '40px auto', padding: '0 16px', fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial' }}>
-      <h1 style={{ fontSize: 20, marginBottom: 8 }}>Generador de informes TC</h1>
-      <p style={{ marginTop: 0, color: '#666' }}>
-        Pega el <strong>dictado completo</strong> (1ª frase = tipo de TC). Termina con <em>"Valida frases normales."</em> si quieres reordenado/agrupación.
-      </p>
+    <div className={`app-container ${darkMode ? 'dark' : ''}`}>
 
-      <label style={{ fontWeight: 600 }}>Dictado</label>
-      <textarea
-        placeholder="TC de tórax con contraste. Nódulo pulmonar... Valida frases normales."
-        value={dictado}
-        onChange={e => setDictado(e.target.value)}
-        rows={10}
-        style={{ width: '100%', marginTop: 6 }}
-      />
-
-      <button
-        onClick={handleGenerate}
+      <div 
+        className={`dictation-popup ${isDragging ? 'dragging' : ''}`}
         style={{
-          marginTop: 12,
-          padding: '10px 16px',
-          border: '1px solid #ccc',
-          borderRadius: 8,
-          cursor: 'pointer',
-          background: '#111',
-          color: '#fff',
-          fontWeight: 600,
+          transform: `translate(${position.x}px, ${position.y}px)`
         }}
       >
-        Generar informe
-      </button>
+        <div 
+          className="popup-header"
+          onMouseDown={handleMouseDown}
+        >
+          <div className="popup-icon">📋</div>
+          <h1 className="popup-title">GENERADOR DE INFORMES TC</h1>
+          <button 
+            className="theme-toggle"
+            onClick={() => setDarkMode(!darkMode)}
+            onMouseDown={(e) => e.stopPropagation()}
+            aria-label="Toggle theme"
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+        </div>
 
-      <div style={{ marginTop: 24 }}>
-        <label style={{ fontWeight: 600 }}>Informe final</label>
+        <div className="popup-content">
+          <textarea
+            className="dictation-textarea"
+            placeholder="TC de tórax con contraste. Nódulo pulmonar... Valida frases normales."
+            value={dictado}
+            onChange={e => setDictado(e.target.value)}
+            rows={12}
+          />
+
+          <button
+            className="generate-button"
+            onClick={handleGenerate}
+          >
+            Generar informe
+          </button>
+        </div>
+      </div>
+
+      <Modal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        title="Informe TC generado"
+        width={800}
+        footer={
+          <button
+            className="btn-secondary"
+            onClick={() => setShowModal(false)}
+          >
+            Cerrar
+          </button>
+        }
+      >
         <textarea
+          className="report-textarea"
           readOnly
           value={report}
-          rows={20}
-          style={{ width: '100%', marginTop: 6 }}
+          rows={25}
         />
-      </div>
-
-      <div style={{ marginTop: 12, fontSize: 12, color: '#888' }}>
-        <div>Presets: {Array.isArray(presets) ? presets.length : 0}</div>
-        <div>Frases normales: {Array.isArray(normalPhrases) ? normalPhrases.length : 0}</div>
-        <div>Bloques de hallazgos: {Array.isArray(findingsJson) ? findingsJson.length : 0}</div>
-        <div>Entrada fuzzy: {Array.isArray(fuzzyLexicon) ? fuzzyLexicon.length : 0}</div>
-      </div>
+      </Modal>
     </div>
   );
 }
