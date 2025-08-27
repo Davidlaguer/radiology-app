@@ -1,18 +1,6 @@
-// src/utils/postprocess.ts
+Pega este bloque en src/utils/postprocess.ts
 
-/**
- * Postproceso de líneas para el informe:
- * - Sistema robusto de eliminación de contradicciones con triggers específicos
- * - Modificación parcial "OTRAS lesiones focales hepáticas" 
- * - Orden anatómico estable por secciones
- * - Modo plantilla con reglas precisas
- */
-
-export type PostprocessOptions = {
-  templateMode?: boolean;     // Activa sistema de contradicciones y orden anatómico
-  literals?: string[];        // (Opcional) Literales de frases normales
-  closingLiteral?: string;    // Por defecto: "Sin otros hallazgos."
-};
+Busca tu bloque de reglas (o añádelo si no existe) y reemplázalo por este. Está pensado para trabajar con tu pipeline actual (modo plantilla activado al detectar “Valida frases normales.”):
 
 // ===============================
 // 1) TRIGGERS para anular frases normales por contradicción
@@ -126,7 +114,7 @@ const DROP_NORMAL_RULES: Array<{
 ];
 
 // ===============================
-// 2) Conversión "No se observan lesiones focales hepáticas" → "No se observan OTRAS…"
+// 2) Conversión “No se observan lesiones focales hepáticas” → “No se observan OTRAS…”
 // ===============================
 function convertHepaticNegativesWhenFocalPresent(lines: string[]): string[] {
   const hasFocal = lines.some(l =>
@@ -207,7 +195,7 @@ export function applyPostprocessNorms(
   // 4.1 Conversión hepática si hay focales
   out = convertHepaticNegativesWhenFocalPresent(out);
 
-  // 4.2 Si 'templateMode', quitar normales contradictorias
+  // 4.2 Si ‘templateMode’, quitar normales contradictorias
   if (opts.templateMode) {
     const joined = out.join(' \n ');
     out = out.filter(normalLine => {
@@ -238,3 +226,6 @@ function dedupeKeepOrder(arr: string[]): string[] {
   for (const x of arr) if (!seen.has(x)) { seen.add(x); res.push(x); }
   return res;
 }
+
+
+Nota: si ya tienes applyPostprocessNorms declarado, sustituye su contenido por el de arriba (respetando tus imports auxiliares si los usas). Si tu plantilla renal usa dos líneas negativas separadas (derecha/izquierda) como en tus ejemplos, este bloque ya lo contempla. Si en algún preset tienes la línea única (“las vías urinarias”), también la contempla.
